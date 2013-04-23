@@ -138,6 +138,45 @@ struct Arm {
         }
         return currentError < posTolerance;
     }
+    
+    void render()
+    {
+        float radius;
+    	const float segmentVol = 8.0;
+    	
+    	/* Draw a segment that's connected to the torso. */
+    	Point3f torsoPoint = getTorsoPoint();
+    	radius = sqrt(segmentVol / (M_PI * getLength(0)));
+    	glPushMatrix();
+    	glScalef(1.0, getLength(0) / radius, 1.0);
+    	glRotatef(Stheta + getTheta(0), 0, 1, 0);
+    	glRotatef(Sphi + getPhi(0), 1, 0, 0);
+    	glTranslatef(torsoPoint.x(), torsoPoint.y(), torsoPoint.z());
+    	glutSolidSphere(radius, 100, 100);
+    	glPopMatrix();
+    	
+    	/* Now attach the forearm to the shoulder and draw it. */
+    	Point3f elbowPoint = getShoulderEnd();
+    	radius = sqrt(segmentVol / (M_PI * getLength(1)));
+    	glPushMatrix();
+    	glScalef(1.0, getLength(1) / radius, 1.0);
+    	glRotatef(Stheta + getTheta(0) + getTheta(1), 0, 1, 0);
+    	glRotatef(Sphi + getPhi(0) + getPhi(1), 1, 0, 0);
+    	glTranslatef(elbowPoint.x(), elbowPoint.y(), elbowPoint.z());
+    	glutSolidSphere(radius, 100, 100);
+    	glPopMatrix();
+    	
+    	/* Now draw the pincer. */
+    	Point3f wristPoint = getForearmEnd();
+    	radius = sqrt((segmentVol / 4.0) / (M_PI * getPincerLength()));
+    	glPushMatrix();
+    	glScalef(1.0, getPincerLength() / radius, 1.0);
+    	glRotatef(Stheta + getTheta(0) + getTheta(1) + getTheta(2), 0, 1, 0);
+    	glRotatef(Sphi + getPhi(0) + getPhi(1) + getPhi(2), 1, 0, 0);
+    	glTranslatef(wristPoint.x(), wristPoint.y(), wristPoint.z());
+    	glutSolidSphere(radius, 10, 10);
+    	glPopMatrix();
+    }
 
 private:
     Torso* torso;
