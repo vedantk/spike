@@ -21,7 +21,9 @@ struct Arm {
 
     Arm(Torso* _torso, Param& _values)
         : torso(_torso), values(_values)
-    {}
+    {
+        endEffector = getPincerEnd();
+    }
 
     inline float getTheta(int n) const {
         return values(n);
@@ -84,15 +86,19 @@ struct Arm {
         J(0, 1) = ;
     }
     
-    float getError(Point3f goal)
+    inline float getError(Point3f goal)
     {
-        return (getPincerEnd() - goal).normalized();
+        return (endEffector - goal).normalized();
+    }
+    
+    inline void updatePosition(Param delta)
+    {
+        values += delta;
+        endEffector = getPincerEnd();
     }
 
     bool IKUpdate(Point3f goal)
     {
-        /* σ = (J+)x * Δp */
-
         const float tolerance = 1.0e-5;
         const float posTolerance = 1.0e-2;
         const int maxSplits = 8;
@@ -103,7 +109,6 @@ struct Arm {
             return true;
         }
         
-        Point3f loc = getPincerEnd();
         computeJacobian();
         
         JacobiSVD<Jacobian> svd = J.jacobiSvd(ComputeThinU | ComputeThinV);
@@ -117,13 +122,14 @@ struct Arm {
                          inv.asDiagonal() *
                          svd.matrixU().transpose()).transpose();
 
-        Param vdelta = Jinv * (goal - loc);
+        /* σ = (J+)x * Δp */
+        Param vdelta = Jinv * (goal - endEffector);
         
-        values += vdelta;
+        updatePosition(vdelta);
         float currentError;
         while ((currentError = getError(goal)) > error && (nrSplits++ < maxSplits)) {
             vdelta /= 2;
-            values -= vdelta;
+            updatePosition(-vdelta);
         }
         return currentError < posTolerance;
     }
@@ -132,7 +138,9 @@ private:
     Torso* torso;
     
     /* <Theta1, Theta2, Theta3, Phi1, Phi2, Phi3, L1, L2> */
-    Vector values;
+    Param values;
     
     Jacobian J;
+    
+    Point3f endEffector;
 };
