@@ -10,17 +10,23 @@ Vector3f getDirection(float theta, float phi) {
 
 struct Torso {
     float radius;
-    float theta;
-    float phi;
     Point3f centroid;
+    
+    void render()
+    {
+        glPushMatrix();
+    	glTranslatef(centroid.x(), centroid.y(), centroid.z());
+    	glutSolidSphere(radius, 100, 100);
+    	glPopMatrix();
+    }
 };
 
 struct Arm {
     typedef Matrix<float, 8, 1> Param;
     typedef Matrix<float, 3, 8> Jacobian;
 
-    Arm(Torso* _torso, Param& _values)
-        : torso(_torso), values(_values)
+    Arm(Torso* _torso, Param& _values, float _Stheta, float _Sphi)
+        : torso(_torso), values(_values), Stheta(_Stheta), Sphi(_Sphi)
     {
         endEffector = getPincerEnd();
     }
@@ -43,21 +49,20 @@ struct Arm {
 
     inline Point3f getTorsoPoint()
     {
-        Vector3f arrow = getDirection(torso->theta, torso->phi);
+        Vector3f arrow = getDirection(Stheta, Sphi);
         return torso->centroid + (torso->radius * arrow);
     }
 
     inline Point3f getShoulderEnd()
     {
-        Vector3f arrow = getDirection(torso->theta + getTheta(0),
-                                      torso->phi + getPhi(0));
+        Vector3f arrow = getDirection(Stheta + getTheta(0), Sphi + getPhi(0));
         return getTorsoPoint() + (getLength(0) * arrow);
     }
 
     inline Point3f getForearmEnd()
     {
-        Vector3f arrow = getDirection(torso->theta + getTheta(0) + getTheta(1),
-                                      torso->phi + getPhi(0) + getPhi(1));
+        Vector3f arrow = getDirection(Stheta + getTheta(0) + getTheta(1),
+                                      Sphi + getPhi(0) + getPhi(1));
         return getShoulderEnd() + (getLength(1) * arrow);
     }
 
@@ -70,9 +75,9 @@ struct Arm {
          * L * <sin(Sphi+phi1+phi2+phi3)*cos(Stheta+theta1+theta2+theta3), cos(Sphi+phi1+phi2+phi3), sin(Sphi+phi1+phi2+phi3)*sin(Stheta+theta1+theta2+theta3)> 
          */
 
-        Vector3f arrow = getDirection(torso->theta + getTheta(0) +
+        Vector3f arrow = getDirection(Stheta + getTheta(0) +
                                       getTheta(1) + getTheta(2),
-                                      torso->phi + getPhi(0) +
+                                      Sphi + getPhi(0) +
                                       getPhi(1) + getPhi(2));
         return getForearmEnd() + (getPincerLength() * arrow);
     }
@@ -136,6 +141,9 @@ struct Arm {
 
 private:
     Torso* torso;
+    
+    float Stheta;
+    float Sphi;
     
     /* <Theta1, Theta2, Theta3, Phi1, Phi2, Phi3, L1, L2> */
     Param values;
