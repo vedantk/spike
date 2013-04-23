@@ -10,6 +10,19 @@ static int vheight = 600;
 static float vw_center = vwidth / 2.0;
 static float vh_center = vheight / 2.0;
 
+struct Thing {
+    Torso torso;
+    Arm arms[24];
+    
+    void render()
+    {
+        torso.render();
+        for (int i=0; i < sizeof(arms)/sizeof(Arm); ++i) {
+            arms[i].render();
+        }
+    }
+};
+
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
