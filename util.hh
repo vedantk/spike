@@ -54,6 +54,10 @@ inline bool fequal(float lhs, float rhs)
     return fabs(lhs - rhs) < 0.001;
 }
 
+inline float square(float a) {
+    return a * a;
+}
+
 inline FloatPair addfp(FloatPair lhs, FloatPair rhs)
 {
     return make_pair(lhs.first + rhs.first, lhs.second + rhs.second);
@@ -62,10 +66,6 @@ inline FloatPair addfp(FloatPair lhs, FloatPair rhs)
 inline FloatPair scalefp(float c, FloatPair p)
 {
     return make_pair(c * p.first, c * p.second);
-}
-
-inline float square(float a) {
-    return a * a;
 }
 
 inline void glvtx3f(Vector3f vec)
@@ -86,14 +86,6 @@ inline float remap(float v0,
     return ((maxf - minf) / (max0 - min0)) * (v0 - min0);
 }
 
-inline Vector3f remapv(Vector3f& v0,
-                       Vector3f& min0, Vector3f& max0,
-                       Vector3f& minf, Vector3f& maxf)
-{
-    /* Perform a component-wise remap operation on vectors. */
-    return (maxf - minf).cwiseQuotient(max0 - min0).cwiseProduct(v0 - min0);
-}
-
 inline float clamp(float v0, float min0, float max0)
 {
     if (v0 < min0) return min0;
@@ -110,7 +102,7 @@ inline Vector3f clampv(Vector3f v0, float min0, float max0)
 
 inline Vector4f homogenize(Vector3f v, bool location)
 {
-    return Vector4f(v(0), v(1), v(2), float(int(location)));
+    return Vector4f(v(0), v(1), v(2), float(location));
 }
 
 inline Vector3f dehomogenize(Vector4f v)
@@ -136,40 +128,3 @@ inline void print_vector(vector<T>& lst, int beg, int end)
     }
     cout << "]" << endl;
 }
-
-class RandomCache {
-    size_t cur;
-    size_t size;
-    float* arr;
-
-public:
-    RandomCache(size_t _size)
-        : size(_size)
-    {
-#ifdef _WIN32
-        srand(time(0));
-#else
-        srand48(0);
-#endif
-        cur = 0;
-        arr = new float[_size];
-        for (size_t i=0; i < _size; ++i) {
-#ifdef _WIN32
-            arr[i] = (double) std::rand() / RAND_MAX;
-#else
-            arr[i] = drand48();
-#endif
-        }
-    }
-
-    ~RandomCache()
-    {
-        delete arr;
-    }
-
-    float rand()
-    {
-        /* Returns values in the range [0.0, 1.0). Let the overflow happen. */
-        return arr[cur++ % size];
-    }
-};
