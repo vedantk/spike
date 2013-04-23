@@ -15,52 +15,51 @@ struct Torso {
     Point3f centroid;
 };
 
-class Arm {
-public:
-    typedef Matrix<float, 8, 1> Vector;
+struct Arm {
+    typedef Matrix<float, 8, 1> Param;
     typedef Matrix<float, 3, 8> Jacobian;
 
-    Arm(Vector& params)
-        : values(params)
+    Arm(Torso* _torso, Param& _values)
+        : torso(_torso), values(_values)
     {}
 
-    float getTheta(int n) const {
+    inline float getTheta(int n) const {
         return values(n);
     }
 
-    float getPhi(int n) const {
+    inline float getPhi(int n) const {
         return values(n + 3);
     }
 
-    float getLength(int n) const {
+    inline float getLength(int n) const {
         return values(n + 6);
     }
 
-    float getPincerLength() const {
+    inline float getPincerLength() const {
         return 1.0;
     }
 
-    Point3f getTorsoPoint(Torso* torso)
+    inline Point3f getTorsoPoint()
     {
         Vector3f arrow = getDirection(torso->theta, torso->phi);
         return torso->centroid + (torso->radius * arrow);
     }
 
-    Point3f getShoulderEnd(Torso* torso)
+    inline Point3f getShoulderEnd()
     {
         Vector3f arrow = getDirection(torso->theta + getTheta(0),
                                       torso->phi + getPhi(0));
-        return getTorsoPoint(torso) + (getLength(0) * arrow);
+        return getTorsoPoint() + (getLength(0) * arrow);
     }
 
-    Point3f getForearmEnd(Torso* torso)
+    inline Point3f getForearmEnd()
     {
         Vector3f arrow = getDirection(torso->theta + getTheta(0) + getTheta(1),
                                       torso->phi + getPhi(0) + getPhi(1));
-        return getShoulderEnd(torso) + (getLength(1) * arrow);
+        return getShoulderEnd() + (getLength(1) * arrow);
     }
 
-    Point3f getPincerEnd(Torso* torso)
+    inline Point3f getPincerEnd()
     {
         /* p(v) = T_0 +
          * Sr * <sin(Sphi) * cos(Stheta), cos(Sphi), sin(Sphi) * sin(Stheta)> +
@@ -73,10 +72,10 @@ public:
                                       getTheta(1) + getTheta(2),
                                       torso->phi + getPhi(0) +
                                       getPhi(1) + getPhi(2));
-        return getForearmEnd(torso) + (getPincerLength() * arrow);
+        return getForearmEnd() + (getPincerLength() * arrow);
     }
 
-    void computeJacobian(Torso* torso, Jacobian& J)
+    void computeJacobian()
     {
         /* d(px)/d(theta1) */
         J(0, 0) = ;
@@ -84,15 +83,29 @@ public:
         /* d(px)/d(theta2) */
         J(0, 1) = ;
     }
-
-    void IKUpdate(Point3f goal)
+    
+    float getError(Point3f goal)
     {
-        /* p(goal) = p(loc) + J(vcur) * delta(vec)
-         * delta(p) = J(vcur) * delta(vec)
-         * delta(vec) = J^+(vcur) * delta(p)
-         */
+        return (getPincerEnd() - goal).normalized();
+    }
+
+    bool IKUpdate(Point3f goal)
+    {
+        /* σ = (J+)x * Δp */
 
         const float tolerance = 1.0e-5;
+        const float posTolerance = 1.0e-2;
+        const int maxSplits = 8;
+        
+        float error = getError(goal);
+        
+        if (error < posTolerance) {
+            return true;
+        }
+        
+        Point3f loc = getPincerEnd();
+        computeJacobian();
+        
         JacobiSVD<Jacobian> svd = J.jacobiSvd(ComputeThinU | ComputeThinV);
         JacobiSVD<Jacobian>::SingularValuesType inv = svd.singularValues();
 
@@ -104,14 +117,22 @@ public:
                          inv.asDiagonal() *
                          svd.matrixU().transpose()).transpose();
 
-        Vector vdelta = Jinv * (goal - loc);
-
+        Param vdelta = Jinv * (goal - loc);
+        
         values += vdelta;
-        if (c)
-
+        float currentError;
+        while ((currentError = getError(goal)) > error && (nrSplits++ < maxSplits)) {
+            vdelta /= 2;
+            values -= vdelta;
+        }
+        return currentError < posTolerance;
     }
 
 private:
+    Torso* torso;
+    
     /* <Theta1, Theta2, Theta3, Phi1, Phi2, Phi3, L1, L2> */
     Vector values;
+    
+    Jacobian J;
 };
