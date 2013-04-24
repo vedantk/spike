@@ -8,25 +8,12 @@ Vector3f getDirection(float theta, float phi) {
     return Vector3f(sin(phi) * cos(theta), cos(phi), sin(phi) * sin(theta));
 }
 
-struct Torso {
-    float radius;
-    Point3f centroid;
-    
-    void render()
-    {
-        glPushMatrix();
-    	glTranslatef(centroid.x(), centroid.y(), centroid.z());
-    	glutSolidSphere(radius, 100, 100);
-    	glPopMatrix();
-    }
-};
-
 struct Arm {
     typedef Matrix<float, 8, 1> Param;
     typedef Matrix<float, 3, 8> Jacobian;
 
     Arm(Torso* _torso, Param& _values, float _Stheta, float _Sphi)
-        : torso(_torso), values(_values), Stheta(_Stheta), Sphi(_Sphi)
+        : torso(_torso), Stheta(_Stheta), Sphi(_Sphi), values(_values) 
     {
         endEffector = getPincerEnd();
     }
@@ -68,13 +55,6 @@ struct Arm {
 
     inline Point3f getPincerEnd()
     {
-        /* p(v) = T_0 +
-         * Sr * <sin(Sphi) * cos(Stheta), cos(Sphi), sin(Sphi) * sin(Stheta)> +
-         * l1 * <sin(Sphi+phi1)*cos(Stheta+theta1), cos(Sphi+phi1), sin(Sphi+phi1)*sin(Stheta+theta1)> +
-         * l2 * <sin(Sphi+phi1+phi2)*cos(Stheta+theta1+theta2), cos(Sphi+phi1+phi2), sin(Sphi+phi1+phi2)*sin(Stheta+theta1+theta2)> +
-         * L * <sin(Sphi+phi1+phi2+phi3)*cos(Stheta+theta1+theta2+theta3), cos(Sphi+phi1+phi2+phi3), sin(Sphi+phi1+phi2+phi3)*sin(Stheta+theta1+theta2+theta3)> 
-         */
-
         Vector3f arrow = getDirection(Stheta + getTheta(0) +
                                       getTheta(1) + getTheta(2),
                                       Sphi + getPhi(0) +
@@ -85,15 +65,15 @@ struct Arm {
     void computeJacobian()
     {
         /* d(px)/d(theta1) */
-        J(0, 0) = ;
+        // J(0, 0) = ;
 
         /* d(px)/d(theta2) */
-        J(0, 1) = ;
+        // J(0, 1) = ;
     }
     
     inline float getError(Point3f goal)
     {
-        return (endEffector - goal).normalized();
+        return (endEffector - goal).norm();
     }
     
     inline void updatePosition(Param delta)
@@ -104,6 +84,7 @@ struct Arm {
 
     bool IKUpdate(Point3f goal)
     {
+#if 0
         const float tolerance = 1.0e-5;
         const float posTolerance = 1.0e-2;
         const int maxSplits = 8;
@@ -123,9 +104,9 @@ struct Arm {
             inv(i) = (inv(i) > tolerance) ? (1.0 / inv(i)) : 0.0;
         }
 
-        Jacobian Jinv = (svd.matrixV() *
-                         inv.asDiagonal() *
-                         svd.matrixU().transpose()).transpose();
+        Jacobian Jinv = svd.matrixV() *
+                        inv.asDiagonal() *
+                        svd.matrixU().transpose();
 
         /* σ = (J+)x * Δp */
         Param vdelta = Jinv * (goal - endEffector);
@@ -137,6 +118,8 @@ struct Arm {
             updatePosition(-vdelta);
         }
         return currentError < posTolerance;
+#endif
+        return 0;
     }
     
     void render()

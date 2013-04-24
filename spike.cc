@@ -10,18 +10,26 @@ static int vheight = 600;
 static float vw_center = vwidth / 2.0;
 static float vh_center = vheight / 2.0;
 
-struct Thing {
-    Torso torso;
-    Arm arms[24];
+static void display()
+{
+    glEnable(GL_LIGHT0);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_DEPTH_TEST);
+    glShadeModel(GL_SMOOTH);
+    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    glMatrixMode(GL_PROJECTION);
     
-    void render()
-    {
-        torso.render();
-        for (int i=0; i < sizeof(arms)/sizeof(Arm); ++i) {
-            arms[i].render();
-        }
-    }
-};
+
+
+
+    glFlush();
+    glutSwapBuffers();
+}
 
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
