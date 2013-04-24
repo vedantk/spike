@@ -1,4 +1,4 @@
-CXX = clang++
-CXXFLAGS = -I/usr/include/eigen3/ -Wall -Wextra -DNDEBUG -O3
+CXX = g++
+CXXFLAGS = -I./eigen/ -Wall -Wextra -DNDEBUG -O3
 
 spike: spike.cc
