@@ -1,6 +1,8 @@
 /*
- * iface.hh
+ * arm.hh
  */
+
+#pragma once
 
 #include "util.hh"
 
@@ -8,13 +10,42 @@ Vector3f getDirection(float theta, float phi) {
     return Vector3f(sin(phi) * cos(theta), cos(phi), sin(phi) * sin(theta));
 }
 
+struct Torso {
+    float radius;
+    Point3f centroid;
+
+    Torso(float _radius, Point3f _centroid)
+        : radius(_radius), centroid(_centroid)
+    {}
+    
+    void render()
+    {
+        glPushMatrix();
+    	glTranslatef(centroid.x(), centroid.y(), centroid.z());
+    	glutSolidSphere(radius, 100, 100);
+    	glPopMatrix();
+    }
+};
+
 struct Arm {
     typedef Matrix<float, 8, 1> Param;
     typedef Matrix<float, 3, 8> Jacobian;
 
-    Arm(Torso* _torso, Param& _values, float _Stheta, float _Sphi)
-        : torso(_torso), Stheta(_Stheta), Sphi(_Sphi), values(_values) 
+    Arm(Torso* _torso, float _Stheta, float _Sphi,
+        float theta0, float theta1, float theta2,
+        float phi0, float phi1, float phi2,
+        float l1, float l2)
+        : torso(_torso), Stheta(_Stheta), Sphi(_Sphi)
     {
+        values(0) = theta0;
+        values(1) = theta1;
+        values(2) = theta2;
+        values(3) = phi0;
+        values(4) = phi1;
+        values(5) = phi2;
+        values(6) = l1;
+        values(7) = l2;
+
         endEffector = getPincerEnd();
     }
 
@@ -64,11 +95,8 @@ struct Arm {
 
     void computeJacobian()
     {
-        /* d(px)/d(theta1) */
-        // J(0, 0) = ;
-
-        /* d(px)/d(theta2) */
-        // J(0, 1) = ;
+        /* J */
+        return;
     }
     
     inline float getError(Point3f goal)
@@ -167,6 +195,7 @@ private:
     float Stheta;
     float Sphi;
     
+    /* XXX: Contraint solving. */
     /* <Theta1, Theta2, Theta3, Phi1, Phi2, Phi3, L1, L2> */
     Param values;
     
