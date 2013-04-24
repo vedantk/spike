@@ -9,7 +9,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+
+#ifdef _WIN32
+#include <windows.h>
+#else
 #include <sys/time.h>
+#endif
+
 #include <assert.h>
 
 #include <string>
