@@ -1,3 +1,9 @@
 *.o
 eigen/
 spike
+
+*.opensdf
+*.sdf
+*.sln
+*.suo
+*.vcxproj*
