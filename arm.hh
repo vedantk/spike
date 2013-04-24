@@ -153,7 +153,9 @@ struct Arm {
     void render()
     {
         float radius;
-    	const float segmentVol = 8.0;
+    	const float segmentVol = 4.0;
+
+    	glColor3f(0.0, 1.0, 0.0);
     	
     	/* Draw a segment that's connected to the torso. */
     	Point3f torsoPoint = getTorsoPoint();
@@ -179,7 +181,7 @@ struct Arm {
     	
     	/* Now draw the pincer. */
     	Point3f wristPoint = getForearmEnd();
-    	radius = sqrt((segmentVol / 4.0) / (M_PI * getPincerLength()));
+    	radius = sqrt((segmentVol / 6.0) / (M_PI * getPincerLength()));
     	glPushMatrix();
     	glScalef(1.0, getPincerLength() / radius, 1.0);
     	glRotatef(Stheta + getTheta(0) + getTheta(1) + getTheta(2), 0, 1, 0);

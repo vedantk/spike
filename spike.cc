@@ -19,10 +19,15 @@ static void display()
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(-10, 10, -10, 10, 10, -10);
+
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
     scene.orient();
+    /*
     gluLookAt(scene.eye.x(),
               scene.eye.y(),
               scene.eye.z(),
@@ -30,6 +35,15 @@ static void display()
               scene.lookAt.y(),
               scene.lookAt.z(),
               0, 1, 0);
+              */
+
+    gluLookAt(0, 0, 0, 0, 0, -10, 0, 1, 0);
+
+    cout << "scene.render()\n";
+    print_vec3("eye", scene.eye);
+    print_vec3("lookAt", scene.lookAt);
+    cout << endl;
+    scene.render();
 
     glFlush();
     glutSwapBuffers();
@@ -40,7 +54,7 @@ void reshape(int w, int h)
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45, float(w)/h, 0.1, 1000);
+    glOrtho(-10, 10, -10, 10, 10, -10);
 }
 
 static void handle_key(unsigned char key, int, int)
@@ -66,9 +80,20 @@ static void handle_key_special(int key, int, int)
     return;
 }
 
+static float flatSurface(float x, float z, float t)
+{
+    return 0;
+}
+
 static void init()
 {
     scene.addThing(new Thing(0.5));
+    scene.addSurface(flatSurface);
+}
+
+static void idle()
+{
+    glutPostRedisplay();
 }
 
 int main(int argc, char** argv)
@@ -84,6 +109,7 @@ int main(int argc, char** argv)
     glutReshapeFunc(reshape);
     glutKeyboardFunc(handle_key);
     glutSpecialFunc(handle_key_special);
+    glutIdleFunc(idle);
 
     init();
 

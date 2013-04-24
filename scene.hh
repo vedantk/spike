@@ -12,10 +12,30 @@
 
 typedef float (*Surface)(float x, float z, float t);
 
+void renderSurface(Surface fn, float t, float x0, float xf, float z0, float zf)
+{
+    const float step = 0.01;
+    for (float x=x0; x < xf; x += step) {
+        for (float z=z0; z < zf; z += step) {
+            float ll = fn(x, z, t);
+            float lr = fn(x + step, z, t);
+            float ul = fn(x, z + step, t);
+            float ur = fn(x + step, z + step, t);
+
+            glColor3f(1.0, 0, 0);
+            glBegin(GL_POLYGON);
+                glVertex3f(x, ll, z);
+                glVertex3f(x + step, lr, z);
+                glVertex3f(x, ul, z + step);
+                glVertex3f(x + step, ur, z + step);
+            glEnd();
+        }
+    }
+}
+
 struct Thing {
     Torso* torso;
     Arm* arms[NR_ARMS];
-    Surface currentSurface;
 
     Thing(float radius) {
         torso = new Torso(radius, Point3f(0, 0, 0));
@@ -61,6 +81,7 @@ struct Thing {
 };
 
 struct Scene {
+    float time;
     Point3f eye;
     Point3f lookAt;
     int focusedThing;
@@ -68,12 +89,17 @@ struct Scene {
     vector<Surface> surfaces;
 
     Scene()
-        : focusedThing(0)
+        : time(0.0), focusedThing(0)
     {}
 
     inline void addThing(Thing* thing)
     {
         things.push_back(thing);
+    }
+
+    inline void addSurface(Surface fn)
+    {
+        surfaces.push_back(fn);
     }
 
     inline Thing* getFocusedThing()
@@ -89,9 +115,29 @@ struct Scene {
 
     void orient()
     {
+        const float step = 0.1;
+        time += step;
+
         lookAt = getFocusedThing()->getCentroid();
 
         /* Place yourself above and closer to origin from the Thing. */
         eye = lookAt.cwiseProduct(Point3f(0.75, 1.5, 0.75));
+        eye(1) += 0.5;
+    }
+
+    void render()
+    {
+        for (size_t i=0; i < things.size(); ++i) {
+            things[i]->render();
+        }
+
+        float x0 = min(eye.x(), lookAt.x());
+        float xf = max(eye.x(), lookAt.x());
+        float z0 = min(eye.z(), lookAt.z());
+        float zf = max(eye.z(), lookAt.z());
+
+        for (size_t i=0; i < surfaces.size(); ++i) {
+            renderSurface(surfaces[i], time, x0, xf, z0, zf);
+        }
     }
 };
