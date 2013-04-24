@@ -11,23 +11,25 @@ struct Scene scene;
 
 static void display()
 {
+    /*
     glEnable(GL_LIGHT0);
     glEnable(GL_LIGHTING);
     glEnable(GL_DEPTH_TEST);
+    */
     glShadeModel(GL_SMOOTH);
 
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(-10, 10, -10, 10, 10, -10);
+    scene.setupOrtho();
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
     scene.orient();
-    /*
+    // scene.lookAt = Point3f(0, 0, -10);
+    // scene.eye = Point3f(0, 3, 5);
+
     gluLookAt(scene.eye.x(),
               scene.eye.y(),
               scene.eye.z(),
@@ -35,9 +37,6 @@ static void display()
               scene.lookAt.y(),
               scene.lookAt.z(),
               0, 1, 0);
-              */
-
-    gluLookAt(0, 0, 0, 0, 0, -10, 0, 1, 0);
 
     cout << "scene.render()\n";
     print_vec3("eye", scene.eye);
@@ -52,9 +51,7 @@ static void display()
 void reshape(int w, int h)
 {
     glViewport(0, 0, w, h);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(-10, 10, -10, 10, 10, -10);
+    scene.setupOrtho();
 }
 
 static void handle_key(unsigned char key, int, int)
@@ -62,6 +59,11 @@ static void handle_key(unsigned char key, int, int)
     static bool isFullscreen = false;
 
     switch (key) {
+
+    case 'q':
+        exit(0);
+        break;
+
     case 'f':
         if (isFullscreen) {
             glutReshapeWindow(INIT_WIDTH, INIT_HEIGHT);
@@ -70,6 +72,7 @@ static void handle_key(unsigned char key, int, int)
         }
         isFullscreen = !isFullscreen;
         break;
+
     }
 
     return;

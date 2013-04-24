@@ -16,7 +16,7 @@ void renderSurface(Surface fn, float t, float x0, float xf, float z0, float zf)
 {
     const float step = 0.01;
     for (float x=x0; x < xf; x += step) {
-        for (float z=z0; z < zf; z += step) {
+        for (float z=zf; z < z0; z += step) {
             float ll = fn(x, z, t);
             float lr = fn(x + step, z, t);
             float ul = fn(x, z + step, t);
@@ -82,14 +82,20 @@ struct Thing {
 
 struct Scene {
     float time;
+
     Point3f eye;
     Point3f lookAt;
+
     int focusedThing;
     vector<Thing*> things;
+
     vector<Surface> surfaces;
 
+    float x0, xf, y0, yf, z0, zf;
+
     Scene()
-        : time(0.0), focusedThing(0)
+        : time(0), focusedThing(0),
+          x0(-10), xf(10), y0(-10), yf(10), z0(10), zf(-10)
     {}
 
     inline void addThing(Thing* thing)
@@ -118,11 +124,12 @@ struct Scene {
         const float step = 0.1;
         time += step;
 
+        /*
         lookAt = getFocusedThing()->getCentroid();
-
-        /* Place yourself above and closer to origin from the Thing. */
-        eye = lookAt.cwiseProduct(Point3f(0.75, 1.5, 0.75));
-        eye(1) += 0.5;
+        eye = Point3f((x0 + xf) / 2, yf, z0);
+        */
+        lookAt = Point3f(0, 0, -8);
+        eye = Point3f(0, 3, 3);
     }
 
     void render()
@@ -130,14 +137,15 @@ struct Scene {
         for (size_t i=0; i < things.size(); ++i) {
             things[i]->render();
         }
-
-        float x0 = min(eye.x(), lookAt.x());
-        float xf = max(eye.x(), lookAt.x());
-        float z0 = min(eye.z(), lookAt.z());
-        float zf = max(eye.z(), lookAt.z());
-
         for (size_t i=0; i < surfaces.size(); ++i) {
             renderSurface(surfaces[i], time, x0, xf, z0, zf);
         }
+    }
+
+    void setupOrtho()
+    {
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(x0, xf, y0, yf, z0, zf);
     }
 };
