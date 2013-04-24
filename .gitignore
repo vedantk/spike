@@ -2,3 +2,9 @@
 eigen/
 spike
 test
+
+*.opensdf
+*.sdf
+*.sln
+*.suo
+*.vcxproj*
