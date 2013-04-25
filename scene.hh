@@ -14,20 +14,22 @@ typedef float (*Surface)(float x, float z, float t);
 
 void renderSurface(Surface fn, float t, float x0, float xf, float z0, float zf)
 {
-    const float step = 0.01;
+    const float step = 0.5;
     for (float x=x0; x < xf; x += step) {
         for (float z=zf; z < z0; z += step) {
-            float ll = fn(x, z, t);
-            float lr = fn(x + step, z, t);
-            float ul = fn(x, z + step, t);
-            float ur = fn(x + step, z + step, t);
+            float ll = fn(x, z + step, t);
+            float lr = fn(x + step, z + step, t);
+            float ul = fn(x, z, t);
+            float ur = fn(x + step, z, t);
 
-            glColor3f(1.0, 0, 0);
+            glColor3f(remap(x, x0, xf, 0, 1),
+                      remap(z, zf, z0, 0, 1),
+                      clamp(x/z, 0, 1));
             glBegin(GL_POLYGON);
                 glVertex3f(x, ll, z);
                 glVertex3f(x + step, lr, z);
-                glVertex3f(x, ul, z + step);
                 glVertex3f(x + step, ur, z + step);
+                glVertex3f(x, ul, z + step);
             glEnd();
         }
     }
@@ -37,8 +39,8 @@ struct Thing {
     Torso* torso;
     Arm* arms[NR_ARMS];
 
-    Thing(float radius) {
-        torso = new Torso(radius, Point3f(0, 0, 0));
+    Thing(float radius, Point3f centroid) {
+        torso = new Torso(radius, centroid);
 
         for (int i=0; i < NR_ARMS; ++i) {
             /* Place arms radially in a circle on the xz plane. */
@@ -81,6 +83,9 @@ struct Thing {
 };
 
 struct Scene {
+    float vwidth;
+    float vheight;
+
     float time;
 
     Point3f eye;
@@ -91,11 +96,8 @@ struct Scene {
 
     vector<Surface> surfaces;
 
-    float x0, xf, y0, yf, z0, zf;
-
     Scene()
-        : time(0), focusedThing(0),
-          x0(-10), xf(10), y0(-10), yf(10), z0(10), zf(-10)
+        : vwidth(800), vheight(600), time(0), focusedThing(0)
     {}
 
     inline void addThing(Thing* thing)
@@ -128,8 +130,8 @@ struct Scene {
         lookAt = getFocusedThing()->getCentroid();
         eye = Point3f((x0 + xf) / 2, yf, z0);
         */
-        lookAt = Point3f(0, 0, -8);
-        eye = Point3f(0, 3, 3);
+        lookAt = Point3f(0, 0, -10);
+        eye = Point3f(0, 3, -15);
     }
 
     void render()
@@ -138,14 +140,14 @@ struct Scene {
             things[i]->render();
         }
         for (size_t i=0; i < surfaces.size(); ++i) {
-            renderSurface(surfaces[i], time, x0, xf, z0, zf);
+            renderSurface(surfaces[i], time, -100, 100, 100, -100);
         }
     }
 
-    void setupOrtho()
+    void setupProjection()
     {
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        glOrtho(x0, xf, y0, yf, z0, zf);
+        gluPerspective(45, vwidth / vheight, 0.001, 1000);
     }
 };

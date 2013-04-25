@@ -21,14 +21,11 @@ static void display()
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    scene.setupOrtho();
+    scene.orient();
+    scene.setupProjection();
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-
-    scene.orient();
-    // scene.lookAt = Point3f(0, 0, -10);
-    // scene.eye = Point3f(0, 3, 5);
 
     gluLookAt(scene.eye.x(),
               scene.eye.y(),
@@ -42,6 +39,7 @@ static void display()
     print_vec3("eye", scene.eye);
     print_vec3("lookAt", scene.lookAt);
     cout << endl;
+
     scene.render();
 
     glFlush();
@@ -50,8 +48,10 @@ static void display()
 
 void reshape(int w, int h)
 {
+    scene.vwidth = float(w);
+    scene.vheight = float(h);
     glViewport(0, 0, w, h);
-    scene.setupOrtho();
+    scene.setupProjection();
 }
 
 static void handle_key(unsigned char key, int, int)
@@ -73,6 +73,17 @@ static void handle_key(unsigned char key, int, int)
         isFullscreen = !isFullscreen;
         break;
 
+    case 'w':
+        break;
+
+    case 'a':
+        break;
+
+    case 's':
+        break;
+
+    case 'd':
+        break;
     }
 
     return;
@@ -90,7 +101,7 @@ static float flatSurface(float x, float z, float t)
 
 static void init()
 {
-    scene.addThing(new Thing(0.5));
+    scene.addThing(new Thing(0.5, Point3f(0, 2, -8)));
     scene.addSurface(flatSurface);
 }
 
@@ -102,7 +113,7 @@ static void idle()
 int main(int argc, char** argv)
 {
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 
     glutInitWindowSize(INIT_WIDTH, INIT_HEIGHT);
     glutInitWindowPosition(24, 24);
