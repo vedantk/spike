@@ -167,7 +167,6 @@ struct Arm {
 
     bool IKUpdate(Point3f goal)
     {
-#if 0
         const float tolerance = 1.0e-5;
         const float posTolerance = 1.0e-2;
         const int maxSplits = 8;
@@ -202,8 +201,6 @@ struct Arm {
             updatePosition(-vdelta);
         }
         return currentError < posTolerance;
-#endif
-        return 0;
     }
     
     void render()
