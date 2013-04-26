@@ -230,17 +230,19 @@ struct Arm {
         return currentError < posTolerance;
     }
  
-    Point3f drawJoint(const Point3f& start, const Vector3f& arrow)
+    // draws spherical joint, returns center of joint
+    Point3f drawJoint(const Point3f& segmentEnd, const Vector3f& arrow)
     {
-    	Point3f center = start + jointRadius * arrow;
+    	Point3f center = segmentEnd + jointRadius * arrow;
     	glColor3f(1.0, 0.0, 0.0);
         glPushMatrix();
     	glTranslatef(center.x(), center.y(), center.z());
     	glutSolidSphere(jointRadius, 10, 10);
     	glPopMatrix();
-    	return center + jointRadius * arrow;
+        return center;
     }   
 
+    // draw a tetrahedron with base at center, in the direction of arrow
     void drawTetrahedron(const Point3f& center, const Vector3f& arrow, float length)
     {
         /* Actually this is technically a square pyramid. Whoops. */
@@ -291,24 +293,27 @@ struct Arm {
 
     	/* Draw the torso joint. */
         center = drawJoint(getTorsoEnd(), getArrow(0));
+        center += getArrow(1) * jointRadius;
 
         /* Draw the shoulder tetrahedron. */
         glColor3f(0.0, 0.5, 0.5);
-        drawTetrahedron(center, getArrow(0), getLength(0));
+        drawTetrahedron(center, getArrow(1), getLength(0));
 
         /* Draw the elbow joint. */
         center = drawJoint(getShoulderEnd(), getArrow(1));
+        center += getArrow(2) * jointRadius;
 
         /* Draw the forearm tetrahedron. */
         glColor3f(0.0, 0.1, 0.9);
-        drawTetrahedron(center, getArrow(1), getLength(1));
+        drawTetrahedron(center, getArrow(2), getLength(1));
 
         /* Draw the wrist joint. */
         center = drawJoint(getForearmEnd(), getArrow(2));
+        center += getArrow(3) * jointRadius;
 
         /* Draw the pincer. */
         glColor3f(0.0, 0.9, 0.1);
-        drawTetrahedron(center, getArrow(2), getPincerLength());
+        drawTetrahedron(center, getArrow(3), getPincerLength());
     }
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
