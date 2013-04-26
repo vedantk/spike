@@ -213,7 +213,7 @@ struct Arm {
 
         /* σ = (J+)x * Δp */
         MatrixXf tmp = svd.matrixV() * inv.asDiagonal();
-        Param vdelta = (tmp * svd.matrixU().transpose()) * (goal - endEffector);
+        Param vdelta = (tmp * svd.matrixU().adjoint()) * (goal - endEffector);
         // Param vdelta = J.transpose() * (goal - endEffector);
         
         updatePosition(vdelta);
