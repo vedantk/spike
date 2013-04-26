@@ -262,6 +262,7 @@ private:
     Point3f endEffector;
 };
 
+/*
 struct Surface {
     typedef float (* SurfaceFn) ( float x, float z, float t);
     SurfaceFn mSurfaceFn;
@@ -269,3 +270,4 @@ struct Surface {
 
     void render();
 };
+*/

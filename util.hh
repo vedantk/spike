@@ -92,19 +92,19 @@ inline float clamp(float v0, float min0, float max0)
     return v0;
 }
 
-inline Vector3f clampv(Vector3f v0, float min0, float max0)
+inline Vector3f clampv(const Vector3f& v0, float min0, float max0)
 {
     return Vector3f(clamp(v0(0), min0, max0),
                     clamp(v0(1), min0, max0),
                     clamp(v0(2), min0, max0));
 }
 
-inline Vector4f homogenize(Vector3f v, bool location)
+inline Vector4f homogenize(const Vector3f& v, bool location)
 {
     return Vector4f(v(0), v(1), v(2), float(location));
 }
 
-inline Vector3f dehomogenize(Vector4f v)
+inline Vector3f dehomogenize(const Vector4f& v)
 {
     return Vector3f(v(0), v(1), v(2));
 }
