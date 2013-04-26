@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "arm.hh"
+#include "arm.cc"
 
 /* The construction of Thing objects is intimately tied to the number of arms
  * attached to the torso. This is simply a convenience macro. */
