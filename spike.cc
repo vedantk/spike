@@ -11,15 +11,11 @@ struct Scene scene;
 
 static void display()
 {
-    /*
-    glEnable(GL_LIGHT0);
-    glEnable(GL_LIGHTING);
-    glEnable(GL_DEPTH_TEST);
-    */
-    glShadeModel(GL_SMOOTH);
-
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearDepth(1.0);
+    glEnable(GL_DEPTH_TEST);
+    glShadeModel(GL_SMOOTH);
 
     scene.orient();
     scene.setupProjection();
@@ -91,6 +87,16 @@ static void handle_key(unsigned char key, int, int)
 
 static void handle_key_special(int key, int, int)
 {
+    switch (key) {
+    case GLUT_KEY_UP:
+    case GLUT_KEY_LEFT:
+    case GLUT_KEY_DOWN:
+    case GLUT_KEY_RIGHT:
+
+    default:
+        cout << "Unhandled special key: " << key << endl;
+    }
+
     return;
 }
 
@@ -99,10 +105,15 @@ static float flatSurface(float x, float z, float t)
     return 0;
 }
 
+static float waveSurface(float x, float z, float t)
+{
+    return 2 + sin(t + x) + cos(t + z);
+}
+
 static void init()
 {
-    scene.addThing(new Thing(0.5, Point3f(0, 2, -8)));
-    scene.addSurface(flatSurface);
+    // scene.addThing(new Thing(0.5, Point3f(0, 3, -8)));
+    scene.addSurface(waveSurface);
 }
 
 static void idle()
@@ -116,7 +127,7 @@ int main(int argc, char** argv)
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 
     glutInitWindowSize(INIT_WIDTH, INIT_HEIGHT);
-    glutInitWindowPosition(24, 24);
+    glutInitWindowPosition(-1, -1);
     glutCreateWindow("Spike");
     
     glutDisplayFunc(display);

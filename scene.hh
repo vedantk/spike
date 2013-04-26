@@ -14,7 +14,7 @@ typedef float (*Surface)(float x, float z, float t);
 
 void renderSurface(Surface fn, float t, float x0, float xf, float z0, float zf)
 {
-    const float step = 0.5;
+    const float step = 0.1;
     for (float x=x0; x < xf; x += step) {
         for (float z=zf; z < z0; z += step) {
             float ll = fn(x, z + step, t);
@@ -22,14 +22,14 @@ void renderSurface(Surface fn, float t, float x0, float xf, float z0, float zf)
             float ul = fn(x, z, t);
             float ur = fn(x + step, z, t);
 
-            glColor3f(remap(x, x0, xf, 0, 1),
-                      remap(z, zf, z0, 0, 1),
-                      clamp(x/z, 0, 1));
+            glColor3f(ur - floor(ur),
+                      ul - floor(ul),
+                      ll - floor(ll));
             glBegin(GL_POLYGON);
-                glVertex3f(x, ll, z);
-                glVertex3f(x + step, lr, z);
-                glVertex3f(x + step, ur, z + step);
-                glVertex3f(x, ul, z + step);
+                glVertex3f(x, ul, z);
+                glVertex3f(x + step, ur, z);
+                glVertex3f(x + step, lr, z + step);
+                glVertex3f(x, ll, z + step);
             glEnd();
         }
     }
@@ -123,15 +123,15 @@ struct Scene {
 
     void orient()
     {
-        const float step = 0.1;
+        const float step = 0.03;
         time += step;
 
         /*
         lookAt = getFocusedThing()->getCentroid();
         eye = Point3f((x0 + xf) / 2, yf, z0);
         */
-        lookAt = Point3f(0, 0, -10);
-        eye = Point3f(0, 3, -15);
+        lookAt = Point3f(0, 1, -10);
+        eye = Point3f(0, 7, -5);
     }
 
     void render()
@@ -140,7 +140,7 @@ struct Scene {
             things[i]->render();
         }
         for (size_t i=0; i < surfaces.size(); ++i) {
-            renderSurface(surfaces[i], time, -100, 100, 100, -100);
+            renderSurface(surfaces[i], time, -10, 10, 10, -10);
         }
     }
 
