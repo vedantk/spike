@@ -27,12 +27,12 @@ struct Torso {
     	glutSolidSphere(radius, 10, 10);
     	glPopMatrix();
     }
-
 };
 
 struct Arm {
     typedef Matrix<float, 8, 1> Param;
-    typedef Matrix<float, 3, 8> Jacobian;
+    // typedef Matrix<float, 3, 8> Jacobian;
+    typedef MatrixXf Jacobian;
 
     Arm(Torso* _torso, float _Stheta, float _Sphi,
         float theta0, float theta1, float theta2,
@@ -117,10 +117,11 @@ struct Arm {
         float theta2 = getTheta(1);
         float theta3 = getTheta(2);
 
-        float L = torso->radius;
+        float L = getPincerLength();
         float l1 = getLength(0);
         float l2 = getLength(1);
 
+        J = MatrixXf(3,8);
         // lol sage
         J(0,0) = sin(Sphi + phi1)*cos(Stheta + theta1);
         J(0,1) = sin(Sphi + phi1 + phi2)*cos(Stheta + theta1 + theta2);
@@ -171,7 +172,7 @@ struct Arm {
         return (endEffector - goal).norm();
     }
     
-    inline void updatePosition(Param delta)
+    inline void updatePosition(const Param& delta)
     {
         values += delta;
         endEffector = getPincerEnd();
@@ -212,8 +213,9 @@ struct Arm {
         // Matrix<float, 8, 3> Jinv = 
 
         /* σ = (J+)x * Δp */
-        MatrixXf tmp = svd.matrixV() * inv.asDiagonal();
-        Param vdelta = (tmp * svd.matrixU().adjoint()) * (goal - endEffector);
+        MatrixXf Jinv = svd.matrixV() * inv.asDiagonal() * svd.matrixU().adjoint();
+        // cout << "Jacobian inverse times Jacobian: " << J * Jinv << endl;
+        Param vdelta = (Jinv) * (goal - endEffector)/100;
         // Param vdelta = J.transpose() * (goal - endEffector);
         
         updatePosition(vdelta);
@@ -228,17 +230,19 @@ struct Arm {
         return currentError < posTolerance;
     }
  
-    Point3f drawJoint(const Point3f& start, const Vector3f& arrow)
+    // draws spherical joint, returns center of joint
+    Point3f drawJoint(const Point3f& segmentEnd, const Vector3f& arrow)
     {
-    	Point3f center = start + jointRadius * arrow;
+    	Point3f center = segmentEnd + jointRadius * arrow;
     	glColor3f(1.0, 0.0, 0.0);
         glPushMatrix();
     	glTranslatef(center.x(), center.y(), center.z());
     	glutSolidSphere(jointRadius, 10, 10);
     	glPopMatrix();
-    	return center + jointRadius * arrow;
+        return center;
     }   
 
+    // draw a tetrahedron with base at center, in the direction of arrow
     void drawTetrahedron(const Point3f& center, const Vector3f& arrow, float length)
     {
         /* Actually this is technically a square pyramid. Whoops. */
@@ -289,24 +293,27 @@ struct Arm {
 
     	/* Draw the torso joint. */
         center = drawJoint(getTorsoEnd(), getArrow(0));
+        center += getArrow(1) * jointRadius;
 
         /* Draw the shoulder tetrahedron. */
         glColor3f(0.0, 0.5, 0.5);
-        drawTetrahedron(center, getArrow(0), getLength(0));
+        drawTetrahedron(center, getArrow(1), getLength(0));
 
         /* Draw the elbow joint. */
         center = drawJoint(getShoulderEnd(), getArrow(1));
+        center += getArrow(2) * jointRadius;
 
         /* Draw the forearm tetrahedron. */
         glColor3f(0.0, 0.1, 0.9);
-        drawTetrahedron(center, getArrow(1), getLength(1));
+        drawTetrahedron(center, getArrow(2), getLength(1));
 
         /* Draw the wrist joint. */
         center = drawJoint(getForearmEnd(), getArrow(2));
+        center += getArrow(3) * jointRadius;
 
         /* Draw the pincer. */
         glColor3f(0.0, 0.9, 0.1);
-        drawTetrahedron(center, getArrow(2), getPincerLength());
+        drawTetrahedron(center, getArrow(3), getPincerLength());
     }
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
