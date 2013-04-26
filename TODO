@@ -1,13 +1,10 @@
 Perfect creature rendering
+- Solve the plane equation (N dot x) = 0 to get a vector on the plane, then take a cross product to get another vector on the plane, fix the drawing of tetrahedra
 - Move the creature.
 - (Debug this) Only render parts of the surface that can actually be seen.
 
-Special effects
-- Lighting, smooth shading.
-- Environment maps + reflections.
-- Define a suite of varying surfaces.
-
 IK
+- Numerical partial derivatives instead of the symbolic kind (less stable).
 - Model of creature walking.
 - Center of mass computation.
 - Stable walking on unstable surfaces.
@@ -24,3 +21,8 @@ Extras
 - Adding multiple creatures to the scene, focus switching.
 - Rendering multiple surfaces, jumping between surfaces.
 - Gravity.
+
+Special effects
+- Lighting, smooth shading.
+- Environment maps + reflections.
+- Define a suite of varying surfaces.
