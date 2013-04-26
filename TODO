@@ -1,10 +1,6 @@
 Perfect creature rendering
-- Ball joint rendering
-- General variable-arm definition of a creature.
-- Replacement of glutSolidsphere in appendages with tetrahedrons
-- Follow creature with gluLookAt.
-- Only render parts of the surface that can actually be seen.
-- Move the creature, move the camera
+- Move the creature.
+- (Debug this) Only render parts of the surface that can actually be seen.
 
 Special effects
 - Lighting, smooth shading.

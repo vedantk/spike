@@ -45,7 +45,7 @@ struct Thing {
             float Stheta = 2.0 * M_PI * i / float(NR_ARMS);
 
             /* Place arms closer together at offsets on the xy plane. */
-            float Sphi = - M_PI / 4.0;
+            float Sphi = M_PI / 4.0;
 
             /* All arms start off parallel to their torso joint vector. */
             arms[i] = new Arm(torso, Stheta, Sphi, 0, 0, 0, 0, 0, 0);
@@ -146,8 +146,13 @@ struct Scene {
         for (size_t i=0; i < things.size(); ++i) {
             things[i]->render();
         }
+
+        float x0 = min(lookAt.x(), eye.x()) - 1;
+        float xf = max(lookAt.x(), eye.x()) + 1;
+        float z0 = max(lookAt.z(), eye.z()) + 1;
+        float zf = min(lookAt.z(), eye.z()) - 1;
         for (size_t i=0; i < surfaces.size(); ++i) {
-            renderSurface(surfaces[i], time, -10, 10, 10, -10);
+            renderSurface(surfaces[i], time, x0, xf, z0, zf);
         }
     }
 };
