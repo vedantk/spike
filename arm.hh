@@ -1,6 +1,8 @@
 /*
- * iface.hh
+ * arm.hh
  */
+
+#pragma once
 
 #include "util.hh"
 
@@ -11,6 +13,10 @@ Vector3f getDirection(float theta, float phi) {
 struct Torso {
     float radius;
     Point3f centroid;
+
+    Torso(float _radius, Point3f _centroid)
+        : radius(_radius), centroid(_centroid)
+    {}
     
     void render()
     {
@@ -25,9 +31,21 @@ struct Arm {
     typedef Matrix<float, 8, 1> Param;
     typedef Matrix<float, 3, 8> Jacobian;
 
-    Arm(Torso* _torso, Param& _values, float _Stheta, float _Sphi)
-        : torso(_torso), values(_values), Stheta(_Stheta), Sphi(_Sphi)
+    Arm(Torso* _torso, float _Stheta, float _Sphi,
+        float theta0, float theta1, float theta2,
+        float phi0, float phi1, float phi2,
+        float l1, float l2)
+        : torso(_torso), Stheta(_Stheta), Sphi(_Sphi)
     {
+        values(0) = theta0;
+        values(1) = theta1;
+        values(2) = theta2;
+        values(3) = phi0;
+        values(4) = phi1;
+        values(5) = phi2;
+        values(6) = l1;
+        values(7) = l2;
+
         endEffector = getPincerEnd();
     }
 
@@ -68,13 +86,6 @@ struct Arm {
 
     inline Point3f getPincerEnd()
     {
-        /* p(v) = T_0 +
-         * Sr * <sin(Sphi) * cos(Stheta), cos(Sphi), sin(Sphi) * sin(Stheta)> +
-         * l1 * <sin(Sphi+phi1)*cos(Stheta+theta1), cos(Sphi+phi1), sin(Sphi+phi1)*sin(Stheta+theta1)> +
-         * l2 * <sin(Sphi+phi1+phi2)*cos(Stheta+theta1+theta2), cos(Sphi+phi1+phi2), sin(Sphi+phi1+phi2)*sin(Stheta+theta1+theta2)> +
-         * L * <sin(Sphi+phi1+phi2+phi3)*cos(Stheta+theta1+theta2+theta3), cos(Sphi+phi1+phi2+phi3), sin(Sphi+phi1+phi2+phi3)*sin(Stheta+theta1+theta2+theta3)> 
-         */
-
         Vector3f arrow = getDirection(Stheta + getTheta(0) +
                                       getTheta(1) + getTheta(2),
                                       Sphi + getPhi(0) +
@@ -139,6 +150,8 @@ struct Arm {
         J(6,2) = L*sin(Sphi + phi1 + phi2 + phi3)*cos(Stheta + theta1 + theta2 + theta3) 
                     + l2*sin(Sphi + phi1 + phi2)*cos(Stheta + theta1 + theta2);
         J(7,2) = L*sin(Sphi + phi1 + phi2 + phi3)*cos(Stheta + theta1 + theta2 + theta3);
+        /* J */
+        return;
     }
     
     inline float getError(Point3f goal)
@@ -154,6 +167,7 @@ struct Arm {
 
     bool IKUpdate(Point3f goal)
     {
+#if 0
         const float tolerance = 1.0e-5;
         const float posTolerance = 1.0e-2;
         const int maxSplits = 8;
@@ -173,9 +187,9 @@ struct Arm {
             inv(i) = (inv(i) > tolerance) ? (1.0 / inv(i)) : 0.0;
         }
 
-        Jacobian Jinv = (svd.matrixV() *
-                         inv.asDiagonal() *
-                         svd.matrixU().transpose()).transpose();
+        Jacobian Jinv = svd.matrixV() *
+                        inv.asDiagonal() *
+                        svd.matrixU().transpose();
 
         /* σ = (J+)x * Δp */
         Param vdelta = Jinv * (goal - endEffector);
@@ -188,12 +202,16 @@ struct Arm {
             updatePosition(-vdelta);
         }
         return currentError < posTolerance;
+#endif
+        return 0;
     }
     
     void render()
     {
         float radius;
-    	const float segmentVol = 8.0;
+    	const float segmentVol = 4.0;
+
+    	glColor3f(0.0, 1.0, 0.0);
     	
     	/* Draw a segment that's connected to the torso. */
     	Point3f torsoPoint = getTorsoPoint();
@@ -219,7 +237,7 @@ struct Arm {
     	
     	/* Now draw the pincer. */
     	Point3f wristPoint = getForearmEnd();
-    	radius = sqrt((segmentVol / 4.0) / (M_PI * getPincerLength()));
+    	radius = sqrt((segmentVol / 6.0) / (M_PI * getPincerLength()));
     	glPushMatrix();
     	glScalef(1.0, getPincerLength() / radius, 1.0);
     	glRotatef(Stheta + getTheta(0) + getTheta(1) + getTheta(2), 0, 1, 0);
@@ -235,6 +253,7 @@ private:
     float Stheta;
     float Sphi;
     
+    /* XXX: Contraint solving. */
     /* <Theta1, Theta2, Theta3, Phi1, Phi2, Phi3, L1, L2> */
     Param values;
     

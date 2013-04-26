@@ -1,0 +1,44 @@
+[                                                                       
+
+sin(Sphi + phi1)*cos(Stheta + theta1)                                   
+
+sin(Sphi + phi1 + phi2)*cos(Stheta + theta1 + theta2)  
+
+L*cos(Stheta + theta1 + theta2 + theta3)*cos(Sphi + phi1 + phi2 + phi3) + l1*cos(Stheta + theta1)*cos(Sphi + phi1) + l2*cos(Stheta + theta1 + theta2)*cos(Sphi + phi1 + phi2)                                             
+L*cos(Stheta + theta1 + theta2 + theta3)*cos(Sphi + phi1 + phi2 + phi3) + l2*cos(Stheta + theta1 + theta2)*cos(Sphi + phi1 + phi2)                              
+
+L*cos(Stheta + theta1 + theta2 + theta3)*cos(Sphi + phi1 + phi2 + phi3)
+
+-L*sin(Stheta + theta1 + theta2 + theta3)*sin(Sphi + phi1 + phi2 + phi3) - l1*sin(Stheta + theta1)*sin(Sphi + phi1) - l2*sin(Stheta + theta1 + theta2)*sin(Sphi + phi1 + phi2)                                         
+
+-L*sin(Stheta + theta1 + theta2 + theta3)*sin(Sphi + phi1 + phi2 + phi3) - l2*sin(Stheta + theta1 + theta2)*sin(Sphi + phi1 + phi2)              
+-L*sin(Stheta + theta1 + theta2 + theta3)*sin(Sphi + phi1 + phi2 + phi3)
+
+]
+
+[                                                                       
+cos(Sphi + phi1)                                                        
+cos(Sphi + phi1 + phi2)                                                 
+-L*sin(Sphi + phi1 + phi2 + phi3) - l1*sin(Sphi + phi1) - l2*sin(Sphi + phi1 + phi2)                                                            
+-L*sin(Sphi + phi1 + phi2 + phi3) - l2*sin(Sphi + phi1 + phi2)          
+-L*sin(Sphi + phi1 + phi2 + phi3)                                       
+0                                                                       
+0                                                                       
+0
+]
+
+
+[                                                                       
+sin(Stheta + theta1)*sin(Sphi + phi1)                                   
+sin(Stheta + theta1 + theta2)*sin(Sphi + phi1 + phi2)  L*sin(Stheta + theta1 + theta2 + theta3)*cos(Sphi + phi1 + phi2 + phi3) + l1*sin(Stheta + theta1)*cos(Sphi + phi1) + l2*sin(Stheta + theta1 + theta2)*cos(Sphi + phi1 + phi2)                                             
+L*sin(Stheta + theta1 + theta2 + theta3)*cos(Sphi + phi1 + phi2 + phi3) + l2*sin(Stheta + theta1 + theta2)*cos(Sphi + phi1 + phi2)                              
+
+L*sin(Stheta + theta1 + theta2 + theta3)*cos(Sphi + phi1 + phi2 + phi3) 
+
+L*sin(Sphi + phi1 + phi2 + phi3)*cos(Stheta + theta1 + theta2 + theta3) + l1*sin(Sphi + phi1)*cos(Stheta + theta1) + l2*sin(Sphi + phi1 + phi2)*cos(Stheta + theta1 + theta2)                                     
+
+L*sin(Sphi + phi1 + phi2 + phi3)*cos(Stheta + theta1 + theta2 + theta3) + l2*sin(Sphi + phi1 + phi2)*cos(Stheta + theta1 + theta2)              
+
+L*sin(Sphi + phi1 + phi2 + phi3)*cos(Stheta + theta1 + theta2 + theta3)
+
+]

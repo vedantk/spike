@@ -1,0 +1,27 @@
+- Variable-arm definition of a creature.
+- Perfect creature rendering.
+
+- Follow creature with gluLookAt.
+- Only render parts of the surface that can actually be seen.
+
+- Lighting, smooth shading.
+- Environment maps + reflections.
+- Define a suite of varying surfaces.
+
+IK
+- Model of creature walking.
+- Center of mass computation.
+- Stable walking on unstable surfaces.
+
+Dealing with IK Constraints
+1. Don't deal with them.
+2. Run standard IK (theta = J.inverse() * position.delta()), clamp results.
+3. Again run standard IK, but project results onto the constraint boundary (this may be marginally more intelligent than doing clamping).
+4. Use Lagrange multipliers.
+
+Extras
+- Acceleration of the creature.
+- Jumping.
+- Adding multiple creatures to the scene, focus switching.
+- Rendering multiple surfaces, jumping between surfaces.
+- Gravity.
