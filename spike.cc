@@ -2,7 +2,7 @@
  * spike.cc
  */
 
-#include "iface.hh"
+#include "arm.cc"
 
 /* Viewport settings. */
 static int vwidth = 800;
