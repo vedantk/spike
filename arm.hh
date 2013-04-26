@@ -6,6 +6,8 @@
 
 #include "util.hh"
 
+#define jointRadius 0.10
+
 Vector3f getDirection(float theta, float phi) {
     return Vector3f(sin(phi) * cos(theta), cos(phi), sin(phi) * sin(theta));
 }
@@ -22,19 +24,18 @@ struct Torso {
     {
         glPushMatrix();
     	glTranslatef(centroid.x(), centroid.y(), centroid.z());
-    	glutSolidSphere(radius, 100, 100);
+    	glutSolidSphere(radius, 10, 10);
     	glPopMatrix();
     }
 };
 
 struct Arm {
-    typedef Matrix<float, 8, 1> Param;
-    typedef Matrix<float, 3, 8> Jacobian;
+    typedef Matrix<float, 6, 1> Param;
+    typedef Matrix<float, 3, 6> Jacobian;
 
     Arm(Torso* _torso, float _Stheta, float _Sphi,
         float theta0, float theta1, float theta2,
-        float phi0, float phi1, float phi2,
-        float l1, float l2)
+        float phi0, float phi1, float phi2)
         : torso(_torso), Stheta(_Stheta), Sphi(_Sphi)
     {
         values(0) = theta0;
@@ -43,56 +44,65 @@ struct Arm {
         values(3) = phi0;
         values(4) = phi1;
         values(5) = phi2;
-        values(6) = l1;
-        values(7) = l2;
 
         endEffector = getPincerEnd();
     }
 
-    inline float getTheta(int n) const {
+    inline float getTheta(int n)
+    {
         return values(n);
     }
 
-    inline float getPhi(int n) const {
+    inline float getPhi(int n)
+    {
         return values(n + 3);
     }
 
-    inline float getLength(int n) const {
-        return values(n + 6);
-    }
-
-    inline float getPincerLength() const {
-        return 1.0;
-    }
-
-    inline Point3f getTorsoPoint()
+    inline float getSegmentLength()
     {
-        Vector3f arrow = getDirection(Stheta, Sphi);
-        return torso->centroid + (torso->radius * arrow);
+        return 0.6;
+    }
+
+    inline float getPincerLength()
+    {
+        return 0.12;
+    }
+
+    inline Vector3f getArrow(int n)
+    {
+        float theta = Stheta;
+        float phi = Sphi;
+        for (int i=0; i < n; ++i) {
+            theta += getTheta(i);
+            phi += getPhi(i);
+        }
+        return getDirection(theta, phi).normalized();
+    }
+
+    inline Point3f getTorsoEnd()
+    {
+        return torso->centroid + (torso->radius * getArrow(0));
     }
 
     inline Point3f getShoulderEnd()
     {
-        Vector3f arrow = getDirection(Stheta + getTheta(0), Sphi + getPhi(0));
-        return getTorsoPoint() + (getLength(0) * arrow);
+        float segLen = getSegmentLength() + (2 * jointRadius);
+        return getTorsoEnd() + (segLen * getArrow(1));
     }
 
     inline Point3f getForearmEnd()
     {
-        Vector3f arrow = getDirection(Stheta + getTheta(0) + getTheta(1),
-                                      Sphi + getPhi(0) + getPhi(1));
-        return getShoulderEnd() + (getLength(1) * arrow);
+        float segLen = getSegmentLength() + (2 * jointRadius);
+        return getShoulderEnd() + (segLen * getArrow(2));
     }
 
     inline Point3f getPincerEnd()
     {
-        Vector3f arrow = getDirection(Stheta + getTheta(0) +
-                                      getTheta(1) + getTheta(2),
-                                      Sphi + getPhi(0) +
-                                      getPhi(1) + getPhi(2));
-        return getForearmEnd() + (getPincerLength() * arrow);
+        float segLen = getPincerLength() + (2 * jointRadius);
+        return getForearmEnd() + (segLen * getArrow(3));
     }
 
+#if 0
     void computeJacobian()
     {
         /* J */
@@ -112,7 +122,6 @@ struct Arm {
 
     bool IKUpdate(Point3f goal)
     {
-#if 0
         const float tolerance = 1.0e-5;
         const float posTolerance = 1.0e-2;
         const int maxSplits = 8;
@@ -141,54 +150,96 @@ struct Arm {
         
         updatePosition(vdelta);
         float currentError;
-        while ((currentError = getError(goal)) > error && (nrSplits++ < maxSplits)) {
+        while ((currentError = getError(goal)) > error
+               && (nrSplits++ < maxSplits))
+        {
             vdelta /= 2;
             updatePosition(-vdelta);
         }
         return currentError < posTolerance;
-#endif
         return 0;
     }
-    
-    void render()
+#endif
+ 
+    Point3f drawJoint(Point3f start, Vector3f arrow)
     {
-        float radius;
-    	const float segmentVol = 4.0;
-
-    	glColor3f(0.0, 1.0, 0.0);
-    	
-    	/* Draw a segment that's connected to the torso. */
-    	Point3f torsoPoint = getTorsoPoint();
-    	radius = sqrt(segmentVol / (M_PI * getLength(0)));
-    	glPushMatrix();
-    	glScalef(1.0, getLength(0) / radius, 1.0);
-    	glRotatef(Stheta + getTheta(0), 0, 1, 0);
-    	glRotatef(Sphi + getPhi(0), 1, 0, 0);
-    	glTranslatef(torsoPoint.x(), torsoPoint.y(), torsoPoint.z());
-    	glutSolidSphere(radius, 100, 100);
-    	glPopMatrix();
-    	
-    	/* Now attach the forearm to the shoulder and draw it. */
-    	Point3f elbowPoint = getShoulderEnd();
-    	radius = sqrt(segmentVol / (M_PI * getLength(1)));
-    	glPushMatrix();
-    	glScalef(1.0, getLength(1) / radius, 1.0);
-    	glRotatef(Stheta + getTheta(0) + getTheta(1), 0, 1, 0);
-    	glRotatef(Sphi + getPhi(0) + getPhi(1), 1, 0, 0);
-    	glTranslatef(elbowPoint.x(), elbowPoint.y(), elbowPoint.z());
-    	glutSolidSphere(radius, 100, 100);
-    	glPopMatrix();
-    	
-    	/* Now draw the pincer. */
-    	Point3f wristPoint = getForearmEnd();
-    	radius = sqrt((segmentVol / 6.0) / (M_PI * getPincerLength()));
-    	glPushMatrix();
-    	glScalef(1.0, getPincerLength() / radius, 1.0);
-    	glRotatef(Stheta + getTheta(0) + getTheta(1) + getTheta(2), 0, 1, 0);
-    	glRotatef(Sphi + getPhi(0) + getPhi(1) + getPhi(2), 1, 0, 0);
-    	glTranslatef(wristPoint.x(), wristPoint.y(), wristPoint.z());
+    	Point3f center = start + jointRadius * arrow;
+    	glColor3f(1.0, 0.0, 0.0);
+        glPushMatrix();
+    	glTranslatef(center.x(), center.y(), center.z());
     	glutSolidSphere(radius, 10, 10);
     	glPopMatrix();
+    	return center + jointRadius * arrow;
+    }   
+
+    void drawTetrahedron(Point3f center, Vector3f arrow, float length)
+    {
+        /* Actually this is technically a square pyramid. Whoops. */
+
+        const float sideLength = 0.45;
+        const float sideHalved = sideLength / 2.0;
+
+        Point3f right = arrow.cross(Vector3f(0, 1, 0)).normalized();
+        Point3f up = right.cross(arrow).normalized();
+
+        Point3f ll = center - sideHalved * (right + up);
+        Point3f lr = center + (sideHalved * right) - (sideHalved * up);
+        Point3f ul = center - (sideHalved * right) + (sideHalved * up);
+        Point3f ur = center + sideHalved * (right + up);
+        Point3f tip = center + length * arrow;
+
+        /* Draw the base. */
+        glBegin(GL_POLYGON);
+            glvtx3f(ll);
+            glvtx3f(lr);
+            glvtx3f(ur);
+            glvtx3f(ul);
+        glEnd();
+
+        /* Draw each face. */
+        glBegin(GL_TRIANGLES);
+            glvtx3f(ll);
+            glvtx3f(lr);
+            glvtx3f(tip);
+
+            glvtx3f(ll);
+            glvtx3f(ul);
+            glvtx3f(tip);
+
+            glvtx3f(ur);
+            glvtx3f(ul);
+            glvtx3f(tip);
+
+            glvtx3f(ur);
+            glvtx3f(lr);
+            glvtx3f(tip);
+        glEnd();
+    }
+
+    void render()
+    {
+    	Point3f center; 
+
+    	/* Draw the torso joint. */
+        center = drawJoint(getTorsoEnd(), getArrow(0));
+
+        /* Draw the shoulder tetrahedron. */
+        glColor3f(0.0, 0.5, 0.5);
+        drawTetrahedron(center, getArrow(0), getSegmentLength());
+
+        /* Draw the elbow joint. */
+        center = drawJoint(getShoulderEnd(), getArrow(1));
+
+        /* Draw the forearm tetrahedron. */
+        glColor3f(0.0, 0.1, 0.9);
+        drawTetrahedron(center, getArrow(1), getSegmentLength());
+
+        /* Draw the wrist joint. */
+        center = drawJoint(getForearmEnd(), getArrow(2));
+
+        /* Draw the pincer. */
+        glColor3f(0.0, 0.9, 0.1);
+        drawTetrahedron(center, getArrow(2), getSegmentLength() / 5.0);
     }
 
 private:
@@ -197,8 +248,7 @@ private:
     float Stheta;
     float Sphi;
     
-    /* XXX: Contraint solving. */
-    /* <Theta1, Theta2, Theta3, Phi1, Phi2, Phi3, L1, L2> */
+    /* <Theta1, Theta2, Theta3, Phi1, Phi2, Phi3> */
     Param values;
     
     Jacobian J;

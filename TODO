@@ -1,9 +1,12 @@
-- Variable-arm definition of a creature.
-- Perfect creature rendering.
-
+Perfect creature rendering
+- Ball joint rendering
+- General variable-arm definition of a creature.
+- Replacement of glutSolidsphere in appendages with tetrahedrons
 - Follow creature with gluLookAt.
 - Only render parts of the surface that can actually be seen.
+- Move the creature, move the camera
 
+Special effects
 - Lighting, smooth shading.
 - Environment maps + reflections.
 - Define a suite of varying surfaces.

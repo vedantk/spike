@@ -6,9 +6,7 @@
 
 #include "arm.hh"
 
-/* The construction of Thing objects is intimately tied to the number of arms
- * attached to the torso. This is simply a convenience macro. */
-#define NR_ARMS     16
+#define NR_ARMS     2
 
 typedef float (*Surface)(float x, float z, float t);
 
@@ -44,14 +42,13 @@ struct Thing {
 
         for (int i=0; i < NR_ARMS; ++i) {
             /* Place arms radially in a circle on the xz plane. */
-            float Stheta = (i % 4) * (M_PI / 2);
+            float Stheta = 2.0 * M_PI * i / float(NR_ARMS);
 
             /* Place arms closer together at offsets on the xy plane. */
-            float Sphi = ((2*i / 4) + 1) * (M_PI / 8);
+            float Sphi = - M_PI / 4.0;
 
             /* All arms start off parallel to their torso joint vector. */
-            arms[i] = new Arm(torso, Stheta, Sphi,
-                              0, 0, 0, 0, 0, 0, 1.0, 1.0);
+            arms[i] = new Arm(torso, Stheta, Sphi, 0, 0, 0, 0, 0, 0);
         }
     }
 
@@ -90,6 +87,7 @@ struct Scene {
 
     Point3f eye;
     Point3f lookAt;
+    Vector3f cameraOffset;
 
     int focusedThing;
     vector<Thing*> things;
@@ -97,7 +95,8 @@ struct Scene {
     vector<Surface> surfaces;
 
     Scene()
-        : vwidth(800), vheight(600), time(0), focusedThing(0)
+        : vwidth(800), vheight(600), time(0),
+          cameraOffset(Point3f(0, 0, 0)), focusedThing(0)
     {}
 
     inline void addThing(Thing* thing)
@@ -117,21 +116,29 @@ struct Scene {
 
     inline void cycleFocus()
     {
-        ++focusedThing;
-        focusedThing %= things.size();
+        focusedThing = (focusedThing + 1) % things.size();
     }
 
-    void orient()
+    void reorient()
     {
         const float step = 0.03;
         time += step;
 
-        /*
         lookAt = getFocusedThing()->getCentroid();
-        eye = Point3f((x0 + xf) / 2, yf, z0);
-        */
-        lookAt = Point3f(0, 1, -10);
-        eye = Point3f(0, 7, -5);
+        eye = lookAt + Point3f(0, 15, 5) + cameraOffset;
+    }
+
+    void setupProjection()
+    {
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        gluPerspective(45, vwidth / vheight, 0.001, 1000);
+
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+
+        gluLookAt(eye.x(), eye.y(), eye.z(), lookAt.x(), lookAt.y(), lookAt.z(),
+                  0, 1, 0);
     }
 
     void render()
@@ -142,12 +149,5 @@ struct Scene {
         for (size_t i=0; i < surfaces.size(); ++i) {
             renderSurface(surfaces[i], time, -10, 10, 10, -10);
         }
-    }
-
-    void setupProjection()
-    {
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        gluPerspective(45, vwidth / vheight, 0.001, 1000);
     }
 };

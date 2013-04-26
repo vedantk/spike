@@ -17,25 +17,8 @@ static void display()
     glEnable(GL_DEPTH_TEST);
     glShadeModel(GL_SMOOTH);
 
-    scene.orient();
+    scene.reorient();
     scene.setupProjection();
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-    gluLookAt(scene.eye.x(),
-              scene.eye.y(),
-              scene.eye.z(),
-              scene.lookAt.x(),
-              scene.lookAt.y(),
-              scene.lookAt.z(),
-              0, 1, 0);
-
-    cout << "scene.render()\n";
-    print_vec3("eye", scene.eye);
-    print_vec3("lookAt", scene.lookAt);
-    cout << endl;
-
     scene.render();
 
     glFlush();
@@ -52,10 +35,10 @@ void reshape(int w, int h)
 
 static void handle_key(unsigned char key, int, int)
 {
+    const float camStep = 0.5;
     static bool isFullscreen = false;
 
     switch (key) {
-
     case 'q':
         exit(0);
         break;
@@ -70,16 +53,31 @@ static void handle_key(unsigned char key, int, int)
         break;
 
     case 'w':
+        scene.cameraOffset(1) += camStep;
         break;
 
     case 'a':
+        scene.cameraOffset(0) -= camStep;
         break;
 
     case 's':
+        scene.cameraOffset(1) -= camStep;
         break;
 
     case 'd':
+        scene.cameraOffset(0) += camStep;
         break;
+
+    case '+':
+        scene.cameraOffset(2) -= camStep;
+        break;
+
+    case '-':
+        scene.cameraOffset(2) += camStep;
+        break;
+
+    default:
+        cout << "Unhandled regular key: " << key << endl;
     }
 
     return;
@@ -87,11 +85,19 @@ static void handle_key(unsigned char key, int, int)
 
 static void handle_key_special(int key, int, int)
 {
+
     switch (key) {
     case GLUT_KEY_UP:
+        break;
+
     case GLUT_KEY_LEFT:
+        break;
+
     case GLUT_KEY_DOWN:
+        break;
+
     case GLUT_KEY_RIGHT:
+        break;
 
     default:
         cout << "Unhandled special key: " << key << endl;
@@ -112,7 +118,7 @@ static float waveSurface(float x, float z, float t)
 
 static void init()
 {
-    // scene.addThing(new Thing(0.5, Point3f(0, 3, -8)));
+    scene.addThing(new Thing(0.1, Point3f(0, 3, -8)));
     scene.addSurface(waveSurface);
 }
 
