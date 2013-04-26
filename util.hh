@@ -39,6 +39,12 @@ typedef Vector3f Color3f;
 typedef pair<float, float> FloatPair;
 typedef pair<Vector3f, Vector3f> Vec3fPair;
 
+#define expand_vec3(vec) \
+    vec(0), vec(1), vec(2)
+
+#define cout_expand_vec3(vec) \
+    "<" << vec(0) << ", " << vec(1) << ", " << vec(2) << ">"
+
 inline float fsign(float v0)
 {
     if (v0 >= 0) {
@@ -69,12 +75,12 @@ inline FloatPair scalefp(float c, FloatPair p)
 
 inline void glvtx3f(Vector3f vec)
 {
-    glVertex3f(vec(0), vec(1), vec(2));
+    glVertex3f(expand_vec3(vec));
 }
 
 inline void glcol3f(Vector3f vec)
 {
-    glColor3f(vec(0), vec(1), vec(2));
+    glColor3f(expand_vec3(vec));
 }
 
 inline float remap(float v0,
@@ -92,27 +98,26 @@ inline float clamp(float v0, float min0, float max0)
     return v0;
 }
 
-inline Vector3f clampv(Vector3f v0, float min0, float max0)
+inline Vector3f clampv(const Vector3f& v0, float min0, float max0)
 {
     return Vector3f(clamp(v0(0), min0, max0),
                     clamp(v0(1), min0, max0),
                     clamp(v0(2), min0, max0));
 }
 
-inline Vector4f homogenize(Vector3f v, bool location)
+inline Vector4f homogenize(const Vector3f& v, bool location)
 {
     return Vector4f(v(0), v(1), v(2), float(location));
 }
 
-inline Vector3f dehomogenize(Vector4f v)
+inline Vector3f dehomogenize(const Vector4f& v)
 {
     return Vector3f(v(0), v(1), v(2));
 }
 
 inline void print_vec3(string name, Vector3f& vec)
 {
-    cout << name << ": "
-         << "<" << vec(0) << ", " << vec(1) << ", " << vec(2) << ">";
+    cout << name << ": " << cout_expand_vec3(vec) << endl;
 }
 
 template<typename T>

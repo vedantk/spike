@@ -105,6 +105,61 @@ struct Arm {
 #if 0
     void computeJacobian()
     {
+        // indexed (c, r)
+
+        float phi1 = getPhi(0);
+        float phi2 = getPhi(1);
+        float phi3 = getPhi(2);
+
+        float theta1 = getTheta(0);
+        float theta2 = getTheta(1);
+        float theta3 = getTheta(2);
+
+        float L = torso->radius;
+        float l1 = getLength(0);
+        float l2 = getLength(1);
+
+        // lol sage
+        J(0,0) = sin(Sphi + phi1)*cos(Stheta + theta1);
+        J(1,0) = sin(Sphi + phi1 + phi2)*cos(Stheta + theta1 + theta2);
+        J(2,0) = L*cos(Stheta + theta1 + theta2 + theta3)*cos(Sphi + phi1 + phi2 + phi3)
+                    + l1*cos(Stheta + theta1)*cos(Sphi + phi1)
+                    + l2*cos(Stheta + theta1 + theta2)*cos(Sphi + phi1 + phi2);
+        J(3,0) = L*cos(Stheta + theta1 + theta2 + theta3)*cos(Sphi + phi1 + phi2 + phi3)
+                    + l2*cos(Stheta + theta1 + theta2)*cos(Sphi + phi1 + phi2);
+        J(4,0) = L*cos(Stheta + theta1 + theta2 + theta3)*cos(Sphi + phi1 + phi2 + phi3);
+        J(5,0) = -L*sin(Stheta + theta1 + theta2 + theta3)*sin(Sphi + phi1 + phi2 + phi3)
+                   - l1*sin(Stheta + theta1)*sin(Sphi + phi1)
+                   - l2*sin(Stheta + theta1 + theta2)*sin(Sphi + phi1 + phi2);
+        J(6,0) = -L*sin(Stheta + theta1 + theta2 + theta3)*sin(Sphi + phi1 + phi2 + phi3) 
+                   - l2*sin(Stheta + theta1 + theta2)*sin(Sphi + phi1 + phi2);
+        J(7,0) = -L*sin(Stheta + theta1 + theta2 + theta3)*sin(Sphi + phi1 + phi2 + phi3);
+
+        J(0,1) = cos(Sphi + phi1);
+        J(1,1) = cos(Sphi + phi1 + phi2);
+        J(2,1) = -L*sin(Sphi + phi1 + phi2 + phi3) 
+                    - l1*sin(Sphi + phi1) 
+                    - l2*sin(Sphi + phi1 + phi2);
+        J(3,1) = -L*sin(Sphi + phi1 + phi2 + phi3) - l2*sin(Sphi + phi1 + phi2);
+        J(4,1) = -L*sin(Sphi + phi1 + phi2 + phi3);
+        J(5,1) = 0;
+        J(6,1) = 0;
+        J(7,1) = 0;
+
+        J(0,2) = sin(Stheta + theta1)*sin(Sphi + phi1);
+        J(1,2) = sin(Stheta + theta1 + theta2)*sin(Sphi + phi1 + phi2);
+        J(2,2) = L*sin(Stheta + theta1 + theta2 + theta3)*cos(Sphi + phi1 + phi2 + phi3)
+                    + l1*sin(Stheta + theta1)*cos(Sphi + phi1) 
+                    + l2*sin(Stheta + theta1 + theta2)*cos(Sphi + phi1 + phi2);
+        J(3,2) = L*sin(Stheta + theta1 + theta2 + theta3)*cos(Sphi + phi1 + phi2 + phi3) 
+                    + l2*sin(Stheta + theta1 + theta2)*cos(Sphi + phi1 + phi2);
+        J(4,2) = L*sin(Stheta + theta1 + theta2 + theta3)*cos(Sphi + phi1 + phi2 + phi3);
+        J(5,2) = L*sin(Sphi + phi1 + phi2 + phi3)*cos(Stheta + theta1 + theta2 + theta3)
+                    + l1*sin(Sphi + phi1)*cos(Stheta + theta1) 
+                    + l2*sin(Sphi + phi1 + phi2)*cos(Stheta + theta1 + theta2);
+        J(6,2) = L*sin(Sphi + phi1 + phi2 + phi3)*cos(Stheta + theta1 + theta2 + theta3) 
+                    + l2*sin(Sphi + phi1 + phi2)*cos(Stheta + theta1 + theta2);
+        J(7,2) = L*sin(Sphi + phi1 + phi2 + phi3)*cos(Stheta + theta1 + theta2 + theta3);
         /* J */
         return;
     }
@@ -150,6 +205,7 @@ struct Arm {
         
         updatePosition(vdelta);
         float currentError;
+        int nrSplits = 0;
         while ((currentError = getError(goal)) > error
                && (nrSplits++ < maxSplits))
         {
@@ -157,7 +213,6 @@ struct Arm {
             updatePosition(-vdelta);
         }
         return currentError < posTolerance;
-        return 0;
     }
 #endif
  
@@ -255,3 +310,13 @@ private:
     
     Point3f endEffector;
 };
+
+/*
+struct Surface {
+    typedef float (* SurfaceFn) ( float x, float z, float t);
+    SurfaceFn mSurfaceFn;
+    Surface(SurfaceFn surfaceFn);
+
+    void render();
+};
+*/
