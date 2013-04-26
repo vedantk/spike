@@ -6,7 +6,7 @@
 
 #include "arm.hh"
 
-#define NR_ARMS     2
+#define NR_ARMS     6
 
 typedef float (*Surface)(float x, float z, float t);
 

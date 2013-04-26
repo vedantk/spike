@@ -118,7 +118,7 @@ static float waveSurface(float x, float z, float t)
 
 static void init()
 {
-    scene.addThing(new Thing(0.1, Point3f(0, 6, -8)));
+    scene.addThing(new Thing(0.7, Point3f(0, 6, -8)));
     scene.addSurface(waveSurface);
 }
 

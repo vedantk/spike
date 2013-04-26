@@ -60,7 +60,7 @@ struct Arm {
 
     inline float getSegmentLength()
     {
-        return 0.6;
+        return 1.2;
     }
 
     inline float getPincerLength()
@@ -176,7 +176,7 @@ struct Arm {
     {
         /* Actually this is technically a square pyramid. Whoops. */
 
-        const float sideLength = 0.45;
+        const float sideLength = 0.25;
         const float sideHalved = sideLength / 2.0;
 
         Point3f right = arrow.cross(Vector3f(0, 1, 0)).normalized();
