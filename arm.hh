@@ -167,7 +167,7 @@ struct Arm {
     	glColor3f(1.0, 0.0, 0.0);
         glPushMatrix();
     	glTranslatef(center.x(), center.y(), center.z());
-    	glutSolidSphere(radius, 10, 10);
+    	glutSolidSphere(jointRadius, 10, 10);
     	glPopMatrix();
     	return center + jointRadius * arrow;
     }   
