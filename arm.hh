@@ -27,12 +27,12 @@ struct Torso {
     	glutSolidSphere(radius, 10, 10);
     	glPopMatrix();
     }
-
 };
 
 struct Arm {
     typedef Matrix<float, 8, 1> Param;
-    typedef Matrix<float, 3, 8> Jacobian;
+    // typedef Matrix<float, 3, 8> Jacobian;
+    typedef MatrixXf Jacobian;
 
     Arm(Torso* _torso, float _Stheta, float _Sphi,
         float theta0, float theta1, float theta2,
@@ -117,10 +117,11 @@ struct Arm {
         float theta2 = getTheta(1);
         float theta3 = getTheta(2);
 
-        float L = torso->radius;
+        float L = getPincerLength();
         float l1 = getLength(0);
         float l2 = getLength(1);
 
+        J = MatrixXf(3,8);
         // lol sage
         J(0,0) = sin(Sphi + phi1)*cos(Stheta + theta1);
         J(0,1) = sin(Sphi + phi1 + phi2)*cos(Stheta + theta1 + theta2);
@@ -171,7 +172,7 @@ struct Arm {
         return (endEffector - goal).norm();
     }
     
-    inline void updatePosition(Param delta)
+    inline void updatePosition(const Param& delta)
     {
         values += delta;
         endEffector = getPincerEnd();
@@ -212,8 +213,9 @@ struct Arm {
         // Matrix<float, 8, 3> Jinv = 
 
         /* σ = (J+)x * Δp */
-        MatrixXf tmp = svd.matrixV() * inv.asDiagonal();
-        Param vdelta = (tmp * svd.matrixU().adjoint()) * (goal - endEffector);
+        MatrixXf Jinv = svd.matrixV() * inv.asDiagonal() * svd.matrixU().adjoint();
+        // cout << "Jacobian inverse times Jacobian: " << J * Jinv << endl;
+        Param vdelta = (Jinv) * (goal - endEffector)/100;
         // Param vdelta = J.transpose() * (goal - endEffector);
         
         updatePosition(vdelta);
