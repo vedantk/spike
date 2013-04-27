@@ -5,6 +5,7 @@
 #pragma once
 
 #include "util.hh"
+#include <FreeImage.h>
 
 #define jointRadius 0.05
 
@@ -15,18 +16,64 @@ Vector3f getDirection(float theta, float phi) {
 struct Torso {
     float radius;
     Point3f centroid;
+    GLUquadricObj* quadric;
+
+    /* http://web.engr.oregonstate.edu/~mjb/cs553/Handouts/Texture/texture.pdf */
+    GLuint texID;
 
     Torso(Point3f _centroid)
-        : radius(0.18), centroid(_centroid)
-    {}
+        : radius(0.8 /* 0.18 */), centroid(_centroid)
+    {
+        FreeImage_Initialise();
+        FIBITMAP* bitmap = FreeImage_Load(FIF_BMP,
+                                          "data/obrien-many-texture.bmp",
+                                          BMP_DEFAULT);
+        if (!bitmap) {
+            cout << "Torso::Torso(): Could not load bitmap.\n";
+            exit(0);
+        }
+
+        uint32_t bm_width = FreeImage_GetWidth(bitmap);
+        uint32_t bm_height = FreeImage_GetHeight(bitmap);
+        uint8_t* texture = (uint8_t*) FreeImage_GetBits(bitmap);
+
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glGenTextures(1, &texID);
+        glBindTexture(GL_TEXTURE_2D, texID);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); 
+        glTexImage2D(GL_TEXTURE_2D, 0, 3, bm_width, bm_height,
+                     0, GL_RGB, GL_UNSIGNED_BYTE, texture);
+
+        FreeImage_Unload(bitmap);
+        FreeImage_DeInitialise();
+
+        /* http://acidleaf.com/texture-mapping-the-glusphere/ */
+        quadric = gluNewQuadric();
+        gluQuadricNormals(quadric, GLU_SMOOTH);
+        gluQuadricTexture(quadric, GL_TRUE);
+    }
     
     void render()
     {
-        glColor3f(0xff / 255.0, 0x5c / 255.0, 0.0);
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, texID);
+        glMatrixMode(GL_TEXTURE);
+        glLoadIdentity();
+        glTranslatef(0.5, 0, 0);
+        glRotatef(180, 1, 0, 0);
+
+        glMatrixMode(GL_MODELVIEW);
+        glShadeModel(GL_SMOOTH);
         glPushMatrix();
     	glTranslatef(centroid.x(), centroid.y(), centroid.z());
-    	glutSolidSphere(radius, 30, 30);
+    	gluSphere(quadric, radius, 30, 30);
     	glPopMatrix();
+
+        glDisable(GL_TEXTURE_2D);
     }
 };
 
