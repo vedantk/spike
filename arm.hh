@@ -250,7 +250,16 @@ struct Arm {
         const float sideLength = 0.25;
         const float sideHalved = sideLength / 2.0;
 
-        Point3f right = arrow.cross(Vector3f(0, 1, 0)).normalized();
+        // get one other point on the plane (plane defined by arrow.dot((x - center)) = 0)
+        Vector3f linearlyIndependent;
+        if (arrow.x() == 0 && arrow.z() == 0) {
+            // vector points in y direction
+            linearlyIndependent = Vector3f(1,0,0);
+        } else {
+            linearlyIndependent = Vector3f(0,1,0);
+        }
+
+        Point3f right = arrow.cross(linearlyIndependent).normalized();
         Point3f up = right.cross(arrow).normalized();
 
         Point3f ll = center - sideHalved * (right + up);
