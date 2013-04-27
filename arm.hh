@@ -31,8 +31,19 @@ struct Torso {
 
 struct Arm {
     typedef Matrix<float, 8, 1> Param;
-    // typedef Matrix<float, 3, 8> Jacobian;
     typedef MatrixXf Jacobian;
+
+    Torso* torso;
+    
+    float Stheta;
+    float Sphi;
+    
+    /* <Theta1, Theta2, Theta3, Phi1, Phi2, Phi3, l1, l2> */
+    Param values;
+    
+    Jacobian J;
+    
+    Point3f endEffector;
 
     Arm(Torso* _torso, float _Stheta, float _Sphi,
         float theta0, float theta1, float theta2,
@@ -326,29 +337,4 @@ struct Arm {
     }
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
-
-// private:
-    Torso* torso;
-    
-    float Stheta;
-    float Sphi;
-    
-    /* <Theta1, Theta2, Theta3, Phi1, Phi2, Phi3, l1, l2> */
-    Param values;
-    
-    Jacobian J;
-    
-    Point3f endEffector;
-
-
 };
-
-/*
-struct Surface {
-    typedef float (* SurfaceFn) ( float x, float z, float t);
-    SurfaceFn mSurfaceFn;
-    Surface(SurfaceFn surfaceFn);
-
-    void render();
-};
-*/

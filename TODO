@@ -1,17 +1,10 @@
 Perfect creature rendering
-- Ball joint rendering
-- General variable-arm definition of a creature.
-- Replacement of glutSolidsphere in appendages with tetrahedrons
-- Follow creature with gluLookAt.
-- Only render parts of the surface that can actually be seen.
-- Move the creature, move the camera
-
-Special effects
-- Lighting, smooth shading.
-- Environment maps + reflections.
-- Define a suite of varying surfaces.
+- Solve the plane equation (N dot x) = 0 to get a vector on the plane, then take a cross product to get another vector on the plane, fix the drawing of tetrahedra
+- Move the creature.
+- (Debug this) Only render parts of the surface that can actually be seen.
 
 IK
+- Numerical partial derivatives instead of the symbolic kind (less stable).
 - Model of creature walking.
 - Center of mass computation.
 - Stable walking on unstable surfaces.
@@ -28,3 +21,8 @@ Extras
 - Adding multiple creatures to the scene, focus switching.
 - Rendering multiple surfaces, jumping between surfaces.
 - Gravity.
+
+Special effects
+- Lighting, smooth shading.
+- Environment maps + reflections.
+- Define a suite of varying surfaces.
