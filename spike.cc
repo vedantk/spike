@@ -2,8 +2,6 @@
  * spike.cc
  */
 
-# pragma once 
-
 #include "arm.hh"
 #include "scene.hh"
 

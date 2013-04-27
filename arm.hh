@@ -116,66 +116,25 @@ struct Arm {
         return getForearmEnd() + (segLen * getArrow(3));
     }
 
+    inline Point3f getPincerDelta(int k, float delta)
+    {
+        values[k] += delta;
+        return getPincerEnd();
+    }
+
+    float partialDerivative(int direction, int k)
+    {
+        const float delta = 0.001;
+        return (getPincerDelta(k, delta) - getPincerDelta(k, -delta))[direction] / delta;
+    }
+
     void computeJacobian()
     {
-        // indexed (c, r)
-
-        float phi1 = getPhi(0);
-        float phi2 = getPhi(1);
-        float phi3 = getPhi(2);
-
-        float theta1 = getTheta(0);
-        float theta2 = getTheta(1);
-        float theta3 = getTheta(2);
-
-        float L = getPincerLength();
-        float l1 = getLength(0);
-        float l2 = getLength(1);
-
-        J = MatrixXf(3,8);
-        // lol sage
-        J(0,0) = sin(Sphi + phi1)*cos(Stheta + theta1);
-        J(0,1) = sin(Sphi + phi1 + phi2)*cos(Stheta + theta1 + theta2);
-        J(0,2) = L*cos(Stheta + theta1 + theta2 + theta3)*cos(Sphi + phi1 + phi2 + phi3)
-                    + l1*cos(Stheta + theta1)*cos(Sphi + phi1)
-                    + l2*cos(Stheta + theta1 + theta2)*cos(Sphi + phi1 + phi2);
-        J(0,3) = L*cos(Stheta + theta1 + theta2 + theta3)*cos(Sphi + phi1 + phi2 + phi3)
-                    + l2*cos(Stheta + theta1 + theta2)*cos(Sphi + phi1 + phi2);
-        J(0,4) = L*cos(Stheta + theta1 + theta2 + theta3)*cos(Sphi + phi1 + phi2 + phi3);
-        J(0,5) = -L*sin(Stheta + theta1 + theta2 + theta3)*sin(Sphi + phi1 + phi2 + phi3)
-                   - l1*sin(Stheta + theta1)*sin(Sphi + phi1)
-                   - l2*sin(Stheta + theta1 + theta2)*sin(Sphi + phi1 + phi2);
-        J(0,6) = -L*sin(Stheta + theta1 + theta2 + theta3)*sin(Sphi + phi1 + phi2 + phi3) 
-                   - l2*sin(Stheta + theta1 + theta2)*sin(Sphi + phi1 + phi2);
-        J(0,7) = -L*sin(Stheta + theta1 + theta2 + theta3)*sin(Sphi + phi1 + phi2 + phi3);
-
-        J(1,0) = cos(Sphi + phi1);
-        J(1,1) = cos(Sphi + phi1 + phi2);
-        J(1,2) = -L*sin(Sphi + phi1 + phi2 + phi3) 
-                    - l1*sin(Sphi + phi1) 
-                    - l2*sin(Sphi + phi1 + phi2);
-        J(1,3) = -L*sin(Sphi + phi1 + phi2 + phi3) - l2*sin(Sphi + phi1 + phi2);
-        J(1,4) = -L*sin(Sphi + phi1 + phi2 + phi3);
-        J(1,5) = 0;
-        J(1,6) = 0;
-        J(1,7) = 0;
-
-        J(2,0) = sin(Stheta + theta1)*sin(Sphi + phi1);
-        J(2,1) = sin(Stheta + theta1 + theta2)*sin(Sphi + phi1 + phi2);
-        J(2,2) = L*sin(Stheta + theta1 + theta2 + theta3)*cos(Sphi + phi1 + phi2 + phi3)
-                    + l1*sin(Stheta + theta1)*cos(Sphi + phi1) 
-                    + l2*sin(Stheta + theta1 + theta2)*cos(Sphi + phi1 + phi2);
-        J(2,3) = L*sin(Stheta + theta1 + theta2 + theta3)*cos(Sphi + phi1 + phi2 + phi3) 
-                    + l2*sin(Stheta + theta1 + theta2)*cos(Sphi + phi1 + phi2);
-        J(2,4) = L*sin(Stheta + theta1 + theta2 + theta3)*cos(Sphi + phi1 + phi2 + phi3);
-        J(2,5) = L*sin(Sphi + phi1 + phi2 + phi3)*cos(Stheta + theta1 + theta2 + theta3)
-                    + l1*sin(Sphi + phi1)*cos(Stheta + theta1) 
-                    + l2*sin(Sphi + phi1 + phi2)*cos(Stheta + theta1 + theta2);
-        J(2,6) = L*sin(Sphi + phi1 + phi2 + phi3)*cos(Stheta + theta1 + theta2 + theta3) 
-                    + l2*sin(Sphi + phi1 + phi2)*cos(Stheta + theta1 + theta2);
-        J(2,7) = L*sin(Sphi + phi1 + phi2 + phi3)*cos(Stheta + theta1 + theta2 + theta3);
-        /* J */
-        return;
+        for (int direction = 0; direction < 3; ++direction) {
+            for (int parameter = 0; parameter < 8; ++parameter) {
+                J(direction, parameter) = partialDerivative(direction, parameter);
+            }
+        }
     }
     
     inline float getError(const Point3f& goal)
