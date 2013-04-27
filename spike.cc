@@ -9,6 +9,7 @@
 #define INIT_HEIGHT 600
 
 struct Scene scene;
+Point3f newPos;
 
 static void display()
 {
@@ -22,6 +23,9 @@ static void display()
     scene.setupProjection();
     scene.render();
 
+    Arm **arms = scene.getFocusedThing()->arms;
+    Point3f oldPos = arms[0]->getPincerEnd();
+    arms[0]->IKUpdate(newPos);
     glFlush();
     glutSwapBuffers();
 }
@@ -121,6 +125,10 @@ static void init()
 {
     scene.addThing(new Thing(0.7, Point3f(0, 6, -8)));
     scene.addSurface(waveSurface);
+
+    Arm **arms = scene.getFocusedThing()->arms;
+    Point3f oldPos = arms[0]->getPincerEnd();
+    newPos = oldPos + Point3f(1,1,1);
 }
 
 static void idle()
