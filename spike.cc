@@ -9,7 +9,6 @@
 #define INIT_HEIGHT 600
 
 struct Scene scene;
-Point3f newPos;
 
 static void display()
 {
@@ -23,9 +22,6 @@ static void display()
     scene.setupProjection();
     scene.render();
 
-    Arm **arms = scene.getFocusedThing()->arms;
-    Point3f oldPos = arms[0]->getPincerEnd();
-    arms[0]->IKUpdate(newPos);
     glFlush();
     glutSwapBuffers();
 }
@@ -123,17 +119,7 @@ static float waveSurface(float x, float z, float t)
 
 static void init()
 {
-    scene.addThing(new Thing(0.7, Point3f(0, 6, -8)));
-    scene.addSurface(waveSurface);
-
-    Arm **arms = scene.getFocusedThing()->arms;
-    Point3f oldPos = arms[0]->getPincerEnd();
-    newPos = oldPos + Point3f(1,1,1);
-}
-
-static void idle()
-{
-    glutPostRedisplay();
+    scene.addThing(new Thing(flatSurface, 0.7, Point3f(0, 6, -8)));
 }
 
 int main(int argc, char** argv)
@@ -149,7 +135,7 @@ int main(int argc, char** argv)
     glutReshapeFunc(reshape);
     glutKeyboardFunc(handle_key);
     glutSpecialFunc(handle_key_special);
-    glutIdleFunc(idle);
+    glutIdleFunc(display);
 
     init();
 

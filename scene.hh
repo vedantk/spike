@@ -36,8 +36,11 @@ void renderSurface(Surface fn, float t, float x0, float xf, float z0, float zf)
 struct Thing {
     Torso* torso;
     Arm* arms[NR_ARMS];
+    Surface surface;
 
-    Thing(float radius, Point3f centroid) {
+    Thing(Surface surf, float radius, Point3f centroid)
+        : surface(surf)
+    {
         torso = new Torso(radius, centroid);
 
         for (int i=0; i < NR_ARMS; ++i) {
@@ -73,8 +76,10 @@ struct Thing {
         return torso->centroid;
     }
 
-    void moveTowards(Point3f goal)
+    void moveTowards(FloatPair direction)
     {
+        /* goal is direction vector on the xz plane */
+
         return;
     }
 };
@@ -92,8 +97,6 @@ struct Scene {
     int focusedThing;
     vector<Thing*> things;
 
-    vector<Surface> surfaces;
-
     Scene()
         : vwidth(800), vheight(600), time(0),
           cameraOffset(Point3f(0, 0, 0)), focusedThing(0)
@@ -102,11 +105,6 @@ struct Scene {
     inline void addThing(Thing* thing)
     {
         things.push_back(thing);
-    }
-
-    inline void addSurface(Surface fn)
-    {
-        surfaces.push_back(fn);
     }
 
     inline Thing* getFocusedThing()
@@ -147,12 +145,10 @@ struct Scene {
             things[i]->render();
         }
 
-        float x0 = min(lookAt.x(), eye.x()) - 1;
-        float xf = max(lookAt.x(), eye.x()) + 1;
-        float z0 = max(lookAt.z(), eye.z()) + 1;
-        float zf = min(lookAt.z(), eye.z()) - 1;
-        for (size_t i=0; i < surfaces.size(); ++i) {
-            renderSurface(surfaces[i], time, x0, xf, z0, zf);
-        }
+        float x0 = min(lookAt.x(), eye.x()) - 10;
+        float xf = max(lookAt.x(), eye.x()) + 10;
+        float z0 = max(lookAt.z(), eye.z()) + 10;
+        float zf = min(lookAt.z(), eye.z()) - 10;
+        renderSurface(getFocusedThing()->surface, time, x0, xf, z0, zf);
     }
 };

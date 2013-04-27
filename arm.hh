@@ -170,24 +170,9 @@ struct Arm {
             inv(i) = (inv(i) > tolerance) ? (1.0 / inv(i)) : 0.0;
         }
 
-        /*
-        cout << "matrix u cols: " << svd.matrixU().cols() << "; rows: " << svd.matrixU().rows() << endl;
-        cout << "matrix v cols: " << svd.matrixV().cols() << "; rows: " << svd.matrixV().rows() << endl;
-        cout << "matrix inv as diagonal cols: " << inv.asDiagonal().cols() << "; rows: " << svd.matrixV().rows() << endl;
-        */
-
-        // svd.matrixV() => 8x3
-        // inv.asDiagonal() => 3x3
-        // svd.matrixU().transpose() => (3x3).transpose() => (3x3)
-        // (3x3) * (3x3) => (3x3)
-        // (3x3) * (3x3) * (3x8) => (3x8)
-        // Matrix<float, 8, 3> Jinv = 
-
         /* σ = (J+)x * Δp */
         MatrixXf Jinv = svd.matrixV() * inv.asDiagonal() * svd.matrixU().adjoint();
-        // cout << "Jacobian inverse times Jacobian: " << J * Jinv << endl;
         Param vdelta = (Jinv) * (goal - endEffector)/100;
-        // Param vdelta = J.transpose() * (goal - endEffector);
         
         updatePosition(vdelta);
         float currentError;
