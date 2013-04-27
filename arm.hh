@@ -130,6 +130,7 @@ struct Arm {
 
     void computeJacobian()
     {
+        J = MatrixXf(3,8);
         for (int direction = 0; direction < 3; ++direction) {
             for (int parameter = 0; parameter < 8; ++parameter) {
                 J(direction, parameter) = partialDerivative(direction, parameter);
