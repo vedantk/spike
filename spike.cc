@@ -86,18 +86,24 @@ static void handle_key(unsigned char key, int, int)
 
 static void handle_key_special(int key, int, int)
 {
+    float up = 1; // fsign(scene.lookAt.z());
+    float right = 1; // fsign(scene.lookAt.x());
 
     switch (key) {
     case GLUT_KEY_UP:
+        scene.getFocusedThing()->moveTowards(make_pair(0, up));
         break;
 
     case GLUT_KEY_LEFT:
+        scene.getFocusedThing()->moveTowards(make_pair(-right, 0));
         break;
 
     case GLUT_KEY_DOWN:
+        scene.getFocusedThing()->moveTowards(make_pair(0, -up));
         break;
 
     case GLUT_KEY_RIGHT:
+        scene.getFocusedThing()->moveTowards(make_pair(right, 0));
         break;
 
     default:
@@ -109,7 +115,10 @@ static void handle_key_special(int key, int, int)
 
 static float flatSurface(float x, float z, float t)
 {
-    return 0;
+    (void) x;
+    (void) z;
+    (void) t;
+    return 0.5;
 }
 
 static float waveSurface(float x, float z, float t)
@@ -119,7 +128,7 @@ static float waveSurface(float x, float z, float t)
 
 static void init()
 {
-    scene.addThing(new Thing(flatSurface, 0.7, Point3f(0, 6, -8)));
+    scene.addThing(new Thing(waveSurface, Point3f(0, 6, -8)));
 }
 
 int main(int argc, char** argv)

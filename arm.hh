@@ -6,7 +6,7 @@
 
 #include "util.hh"
 
-#define jointRadius 0.10
+#define jointRadius 0.05
 
 Vector3f getDirection(float theta, float phi) {
     return Vector3f(sin(phi) * cos(theta), cos(phi), sin(phi) * sin(theta));
@@ -16,22 +16,22 @@ struct Torso {
     float radius;
     Point3f centroid;
 
-    Torso(float _radius, Point3f _centroid)
-        : radius(_radius), centroid(_centroid)
+    Torso(Point3f _centroid)
+        : radius(0.18), centroid(_centroid)
     {}
     
     void render()
     {
+        glColor3f(0xff / 255.0, 0x5c / 255.0, 0.0);
         glPushMatrix();
     	glTranslatef(centroid.x(), centroid.y(), centroid.z());
-    	glutSolidSphere(radius, 10, 10);
+    	glutSolidSphere(radius, 30, 30);
     	glPopMatrix();
     }
 };
 
 struct Arm {
     typedef Matrix<float, 8, 1> Param;
-    typedef MatrixXf Jacobian;
 
     Torso* torso;
     
@@ -41,7 +41,7 @@ struct Arm {
     /* <Theta1, Theta2, Theta3, Phi1, Phi2, Phi3, l1, l2> */
     Param values;
     
-    Jacobian J;
+    MatrixXf J;
     
     Point3f endEffector;
 
@@ -56,9 +56,10 @@ struct Arm {
         values(3) = phi0;
         values(4) = phi1;
         values(5) = phi2;
-        values(6) = 1.2;
-        values(7) = 1.5;
+        values(6) = 0.5;
+        values(7) = 0.7;
 
+        J = MatrixXf(3, 8);
         endEffector = getPincerEnd();
     }
 
@@ -125,12 +126,12 @@ struct Arm {
     float partialDerivative(int direction, int k)
     {
         const float delta = 0.001;
-        return (getPincerDelta(k, delta) - getPincerDelta(k, -delta))[direction] / delta;
+        return (getPincerDelta(k, delta) - getPincerDelta(k, -delta))[direction]
+               / delta;
     }
 
     void computeJacobian()
     {
-        J = MatrixXf(3,8);
         for (int direction = 0; direction < 3; ++direction) {
             for (int parameter = 0; parameter < 8; ++parameter) {
                 J(direction, parameter) = partialDerivative(direction, parameter);
@@ -163,8 +164,8 @@ struct Arm {
         
         computeJacobian();
         
-        JacobiSVD<Jacobian> svd = J.jacobiSvd(ComputeThinU | ComputeThinV);
-        JacobiSVD<Jacobian>::SingularValuesType inv = svd.singularValues();
+        JacobiSVD<MatrixXf> svd = J.jacobiSvd(ComputeThinU | ComputeThinV);
+        JacobiSVD<MatrixXf>::SingularValuesType inv = svd.singularValues();
 
         for (long i=0; i < J.rows(); ++i) {
             inv(i) = (inv(i) > tolerance) ? (1.0 / inv(i)) : 0.0;
@@ -190,10 +191,10 @@ struct Arm {
     Point3f drawJoint(const Point3f& segmentEnd, const Vector3f& arrow)
     {
     	Point3f center = segmentEnd + jointRadius * arrow;
-    	glColor3f(1.0, 0.0, 0.0);
+    	glColor3f(0.4, 0.1, 0.1);
         glPushMatrix();
     	glTranslatef(center.x(), center.y(), center.z());
-    	glutSolidSphere(jointRadius, 10, 10);
+    	glutSolidSphere(jointRadius, 20, 20);
     	glPopMatrix();
         return center;
     }   
@@ -203,7 +204,7 @@ struct Arm {
     {
         /* Actually this is technically a square pyramid. Whoops. */
 
-        const float sideLength = 0.25;
+        const float sideLength = 0.07;
         const float sideHalved = sideLength / 2.0;
 
         // get one other point on the plane (plane defined by arrow.dot((x - center)) = 0)
@@ -261,7 +262,7 @@ struct Arm {
         center += getArrow(1) * jointRadius;
 
         /* Draw the shoulder tetrahedron. */
-        glColor3f(0.0, 0.5, 0.5);
+        glColor3f(0xff / 255.0, 0x9e / 255.0, 0.0);
         drawTetrahedron(center, getArrow(1), getLength(0));
 
         /* Draw the elbow joint. */
@@ -269,7 +270,7 @@ struct Arm {
         center += getArrow(2) * jointRadius;
 
         /* Draw the forearm tetrahedron. */
-        glColor3f(0.0, 0.1, 0.9);
+        glColor3f(0x09 / 255.0, 0x66 / 255.0, 0xde / 255.0);
         drawTetrahedron(center, getArrow(2), getLength(1));
 
         /* Draw the wrist joint. */
@@ -277,7 +278,7 @@ struct Arm {
         center += getArrow(3) * jointRadius;
 
         /* Draw the pincer. */
-        glColor3f(0.0, 0.9, 0.1);
+        glColor3f(1.0, 0.0, 0.0);
         drawTetrahedron(center, getArrow(3), getPincerLength());
     }
 

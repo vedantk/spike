@@ -38,20 +38,21 @@ struct Thing {
     Arm* arms[NR_ARMS];
     Surface surface;
 
-    Thing(Surface surf, float radius, Point3f centroid)
+    Thing(Surface surf, Point3f centroid)
         : surface(surf)
     {
-        torso = new Torso(radius, centroid);
+        torso = new Torso(centroid);
 
         for (int i=0; i < NR_ARMS; ++i) {
             /* Place arms radially in a circle on the xz plane. */
             float Stheta = 2.0 * M_PI * i / float(NR_ARMS);
 
             /* Place arms closer together at offsets on the xy plane. */
-            float Sphi = M_PI / 4.0;
+            float Sphi = 6.5 * M_PI / 8.0;
 
             /* All arms start off parallel to their torso joint vector. */
-            arms[i] = new Arm(torso, Stheta, Sphi, 0, 0, 0, 0, 0, 0);
+            arms[i] = new Arm(torso, Stheta, Sphi, 0, 0, 0,
+                              0, M_PI/8, 0);
         }
     }
 
@@ -79,6 +80,8 @@ struct Thing {
     void moveTowards(FloatPair direction)
     {
         /* goal is direction vector on the xz plane */
+
+        torso->centroid += Point3f(direction.first, 0, direction.second);
 
         return;
     }
@@ -145,10 +148,10 @@ struct Scene {
             things[i]->render();
         }
 
-        float x0 = min(lookAt.x(), eye.x()) - 10;
-        float xf = max(lookAt.x(), eye.x()) + 10;
-        float z0 = max(lookAt.z(), eye.z()) + 10;
-        float zf = min(lookAt.z(), eye.z()) - 10;
+        float x0 = min(lookAt.x(), eye.x()) - 12;
+        float xf = max(lookAt.x(), eye.x()) + 12;
+        float z0 = max(lookAt.z(), eye.z()) + 12;
+        float zf = min(lookAt.z(), eye.z()) - 12;
         renderSurface(getFocusedThing()->surface, time, x0, xf, z0, zf);
     }
 };
