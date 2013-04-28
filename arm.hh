@@ -9,8 +9,21 @@
 
 #define jointRadius 0.05
 
-Vector3f getDirection(float theta, float phi) {
+inline Vector3f getDirection(float theta, float phi)
+{
     return Vector3f(sin(phi) * cos(theta), cos(phi), sin(phi) * sin(theta));
+}
+
+inline float getDirectionComponent(float theta, float phi, int k)
+{
+    if (k == 0) {
+        return sin(phi) * cos(theta);
+    } else if (k == 1) {
+        return cos(phi);
+    } else if (k == 2) {
+        return sin(phi) * sin(theta);
+    }
+    return 0.0;
 }
 
 struct Torso {
@@ -141,9 +154,25 @@ struct Arm {
         return getDirection(theta, phi).normalized();
     }
 
+    inline float getArrowComponent(int n, int k)
+    {
+        float theta = Stheta;
+        float phi = Sphi;
+        for (int i=0; i < n; ++i) {
+            theta += getTheta(i);
+            phi += getPhi(i);
+        }
+        return getDirectionComponent(theta, phi, k);
+    }
+
     inline Point3f getTorsoEnd()
     {
         return torso->centroid + (torso->radius * getArrow(0));
+    }
+
+    inline float getTorsoEndComponent(int k)
+    {
+        return torso->centroid[k] + (torso->radius * getArrowComponent(0, k));
     }
 
     inline Point3f getShoulderEnd()
@@ -152,10 +181,22 @@ struct Arm {
         return getTorsoEnd() + (segLen * getArrow(1));
     }
 
+    inline float getShoulderEndComponent(int k)
+    {
+        float segLen = getLength(0) + (2 * jointRadius);
+        return getTorsoEndComponent(k) + (segLen * getArrowComponent(1, k));
+    }
+
     inline Point3f getForearmEnd()
     {
         float segLen = getLength(1) + (2 * jointRadius);
         return getShoulderEnd() + (segLen * getArrow(2));
+    }
+
+    inline float getForearmEndComponent(int k)
+    {
+        float segLen = getLength(1) + (2 * jointRadius);
+        return getShoulderEndComponent(k) + (segLen * getArrowComponent(2, k));
     }
 
     inline Point3f getPincerEnd()
@@ -164,17 +205,23 @@ struct Arm {
         return getForearmEnd() + (segLen * getArrow(3));
     }
 
-    inline Point3f getPincerDelta(int k, float delta)
+    inline float getPincerEndComponent(int k)
     {
-        values[k] += delta;
-        return getPincerEnd();
+        float segLen = getPincerLength() + (2 * jointRadius);
+        return getForearmEndComponent(k) + (segLen * getArrowComponent(3, k));
     }
 
-    float partialDerivative(int direction, int k)
+    inline float getPincerDelta(int direction, int k, float delta)
+    {
+        values[k] += delta;
+        return getPincerEndComponent(direction);
+    }
+
+    float partialDerivative(int direction, int parameter)
     {
         const float delta = 0.001;
-        return (getPincerDelta(k, delta) - getPincerDelta(k, -delta))[direction]
-               / delta;
+        return (getPincerDelta(direction, parameter, delta) -
+                getPincerDelta(direction, parameter, -delta)) / delta;
     }
 
     void computeJacobian()
