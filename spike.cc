@@ -21,7 +21,7 @@ static void display()
     scene.reorient();
     scene.setupProjection();
     scene.render();
-    scene.getFocusedThing()->touchSurfaceImmediately(scene.time);
+    // scene.getFocusedThing()->touchSurfaceImmediately(scene.time);
 
     glFlush();
     glutSwapBuffers();
