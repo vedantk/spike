@@ -20,9 +20,11 @@ void renderSurface(Surface fn, float t, float x0, float xf, float z0, float zf)
             float ul = fn(x, z, t);
             float ur = fn(x + step, z, t);
 
-            glColor3f(ur - floor(ur),
-                      ul - floor(ul),
-                      ll - floor(ll));
+            glcol3f((
+                Point3f(ur*ul*lr, lr*ll, ll).normalized() +
+                Point3f(ur - floor(ur), ul - floor(ul), ll - floor(ll)).normalized()
+            ).normalized());
+
             glBegin(GL_POLYGON);
                 glVertex3f(x, ul, z);
                 glVertex3f(x + step, ur, z);
