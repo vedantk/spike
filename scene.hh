@@ -112,6 +112,8 @@ struct Thing {
         /* goal is direction vector on the xz plane */
         Vector3f stepSize = direction * moveData->stepSize;
         Vector3f deltaSize = stepSize / moveData->numDeltas;
+        // cout << "Called moveTowards" << endl;
+        // print_vec3("deltaSize: ", deltaSize);
 
         /* have all the arms completed a full step? */
         bool completedStep = true;
@@ -119,13 +121,14 @@ struct Thing {
 
         if (directionChanged) {
             moveData->newTorsoLocation = torso->centroid;
-            cout << "Resetting new torso location" << endl;
+            // cout << "Direction changed" << endl;
         }
 
         float torsoError = (torso->centroid - moveData->newTorsoLocation).norm();
-        if (torsoError > 0.000001) cout << "Torso error: " << torsoError << endl;
+        // if (torsoError > 0.000001) cout << "Torso error: " << torsoError << endl;
         if (torsoError > 1.0e-3) {
             for (Arm *arm : arms) {
+                // cout << "Moving torso" << endl;
                 arm->IKUpdate();
                 while(!arm->IKUpdate());
             }
@@ -138,6 +141,7 @@ struct Thing {
 
         for (int i = int(moveData->moveOddLegs); i < NR_ARMS; i+=2) {
 
+            // cout << "Arm number: " << i << endl;
             Arm *arm = arms[i];
 
             bool reachedGoal = arms[i]->getError() == 0;
@@ -147,6 +151,8 @@ struct Thing {
             if (directionChanged || 
                 (reachedGoal && deltas[i] < moveData->numDeltas)) {
 
+                // print_vec3("Arm position: ", arms[i]->endEffector);
+                // print_vec3("Old goal position: ", arms[i]->goal);
                 if (directionChanged) {
                     // reset number of deltas if we've changed direction
                     // print_vec3("New direction: ", direction);
@@ -157,10 +163,18 @@ struct Thing {
 
                 arms[i]->goal = arms[i]->getPincerEnd() + deltaSize;
                 clampToSurface(arms[i]->goal, surface, time);
+
+                // print_vec3("New goal position: ", arms[i]->goal);
                 completedStep = false;
+                // cout << "Completed step: " << completedStep << endl;
             } else {
+                // cout << "Updating arm IK" << endl;
+                // print_vec3("Old arm pos: ", arms[i]->endEffector);
                 arms[i]->IKUpdate();
+                // print_vec3("New arm pos: ", arms[i]->endEffector);
+                // print_vec3("Goal arm pos: ", arms[i]->goal);
                 if (deltas[i] != moveData->numDeltas || !reachedGoal) {
+                    // cout << "Completed step is false" << endl;
                     completedStep = false;
                 }
             }
