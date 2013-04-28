@@ -132,3 +132,7 @@ inline void print_vector(vector<T>& lst, int beg, int end)
     }
     cout << "]" << endl;
 }
+
+#define clampToSurface(p, surface, time) { \
+    p[1] = surface(p.x(), p.z(), time); \
+}

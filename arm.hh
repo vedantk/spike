@@ -88,6 +88,7 @@ struct Torso {
 
         glDisable(GL_TEXTURE_2D);
     }
+
 };
 
 struct Arm {
@@ -104,6 +105,7 @@ struct Arm {
     MatrixXf J;
     
     Point3f endEffector;
+    Point3f goal;
 
     Arm(Torso* _torso, float _Stheta, float _Sphi,
         float theta0, float theta1, float theta2,
@@ -121,6 +123,7 @@ struct Arm {
 
         J = MatrixXf(3, 8);
         endEffector = getPincerEnd();
+        goal = endEffector;
     }
 
     inline float getTheta(int n)
@@ -202,7 +205,8 @@ struct Arm {
     inline Point3f getPincerEnd()
     {
         float segLen = getPincerLength() + (2 * jointRadius);
-        return getForearmEnd() + (segLen * getArrow(3));
+        endEffector = getForearmEnd() + (segLen * getArrow(3));
+        return endEffector;
     }
 
     inline float getPincerEndComponent(int k)
@@ -233,28 +237,30 @@ struct Arm {
         }
     }
     
-    inline float getError(const Point3f& goal)
-    {
-        return (endEffector - goal).norm();
-    }
-    
     inline void updatePosition(const Param& delta)
     {
         values += delta;
         endEffector = getPincerEnd();
     }
 
-    bool IKUpdate(const Point3f& goal)
+    // return error if less than tolerance, else return 0
+    inline float getError() {
+        const float posTolerance = 1.0e-1;
+        float error = (endEffector - goal).norm();
+        if (error < posTolerance) {
+            return 0;
+        } else {
+            return error;
+        }
+    }
+
+    bool IKUpdate()
     {
         const float tolerance = 1.0e-5;
-        const float posTolerance = 1.0e-2;
         const int maxSplits = 8;
         
-        float error = getError(goal);
-        
-        if (error < posTolerance) {
-            return true;
-        }
+        float error = getError();
+        if (error == 0) return true;
         
         computeJacobian();
         
@@ -272,13 +278,13 @@ struct Arm {
         updatePosition(vdelta);
         float currentError;
         int nrSplits = 0;
-        while ((currentError = getError(goal)) > error
+        while ((currentError = getError()) > error
                && (nrSplits++ < maxSplits))
         {
             vdelta /= 2;
             updatePosition(-vdelta);
         }
-        return currentError < posTolerance;
+        return currentError <= 0;
     }
  
     // draws spherical joint, returns center of joint

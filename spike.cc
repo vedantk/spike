@@ -21,6 +21,7 @@ static void display()
     scene.reorient();
     scene.setupProjection();
     scene.render();
+    scene.getFocusedThing()->touchSurfaceImmediately(scene.time);
 
     glFlush();
     glutSwapBuffers();
@@ -91,19 +92,19 @@ static void handle_key_special(int key, int, int)
 
     switch (key) {
     case GLUT_KEY_UP:
-        scene.getFocusedThing()->moveTowards(make_pair(0, up));
+        scene.getFocusedThing()->moveTowards(make_pair(0, up), scene.time);
         break;
 
     case GLUT_KEY_LEFT:
-        scene.getFocusedThing()->moveTowards(make_pair(-right, 0));
+        scene.getFocusedThing()->moveTowards(make_pair(-right, 0), scene.time);
         break;
 
     case GLUT_KEY_DOWN:
-        scene.getFocusedThing()->moveTowards(make_pair(0, -up));
+        scene.getFocusedThing()->moveTowards(make_pair(0, -up), scene.time);
         break;
 
     case GLUT_KEY_RIGHT:
-        scene.getFocusedThing()->moveTowards(make_pair(right, 0));
+        scene.getFocusedThing()->moveTowards(make_pair(right, 0), scene.time);
         break;
 
     default:
@@ -126,9 +127,15 @@ static float waveSurface(float x, float z, float t)
     return 2 + sin(t + x) + cos(t + z);
 }
 
+static float timeInvariantWaveSurface(float x, float z, float t) 
+{
+    return 2 + sin(x) + cos(z);
+}
+
 static void init()
 {
-    scene.addThing(new Thing(waveSurface, Point3f(0, 6, -8)));
+    scene.addThing(new Thing(flatSurface, Point3f(0, 2, -8)));
+    scene.getFocusedThing()->touchSurfaceImmediately(scene.time);
 }
 
 int main(int argc, char** argv)

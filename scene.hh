@@ -35,15 +35,34 @@ void renderSurface(Surface fn, float t, float x0, float xf, float z0, float zf)
     }
 }
 
+struct MoveData {
+    bool moveOddLegs;
+    Vector3f direction;
+    float stepSize;
+    float numDeltas;
+    Point3f newTorsoLocation;
+
+    MoveData(float step) : stepSize(step) {
+        moveOddLegs = true; 
+        numDeltas = 1;
+    }
+};
+
 struct Thing {
     Torso* torso;
     Arm* arms[NR_ARMS];
     Surface surface;
+    /* if we're implementing arcing, the thing will need to know where 
+       on the arc it is, and what direction it was/is moving in */
+    MoveData *moveData;
+    /* which part of a step each arm is on */
+    float deltas[NR_ARMS];
 
     Thing(Surface surf, Point3f centroid)
         : surface(surf)
     {
         torso = new Torso(centroid);
+        moveData = new MoveData(2);
 
         for (int i=0; i < NR_ARMS; ++i) {
             /* Place arms radially in a circle on the xz plane. */
@@ -79,14 +98,99 @@ struct Thing {
         return torso->centroid;
     }
 
-    void moveTowards(FloatPair direction)
+    void updateCentroid(Vector3f& delta) {
+        torso->centroid += delta;
+        for (Arm* arm : arms) {
+            arm->endEffector = arm->getPincerEnd(); 
+        }
+    }
+
+    void moveTowards(FloatPair dir, float time)
     {
+        Vector3f direction(dir.first, 0, dir.second);
+        direction.normalized();
         /* goal is direction vector on the xz plane */
+        Vector3f stepSize = direction * moveData->stepSize;
+        Vector3f deltaSize = stepSize / moveData->numDeltas;
 
-        torso->centroid += Point3f(direction.first, 0, direction.second);
+        /* have all the arms completed a full step? */
+        bool completedStep = true;
+        bool directionChanged = direction != moveData->direction;
 
+        if (directionChanged) {
+            moveData->newTorsoLocation = torso->centroid;
+            cout << "Resetting new torso location" << endl;
+        }
+
+        float torsoError = (torso->centroid - moveData->newTorsoLocation).norm();
+        if (torsoError > 0.000001) cout << "Torso error: " << torsoError << endl;
+        if (torsoError > 1.0e-3) {
+            for (Arm *arm : arms) {
+                arm->IKUpdate();
+                while(!arm->IKUpdate());
+            }
+            // print_vec3("Updating centroid from: ", torso->centroid);
+            Point3f torsoDelta = deltaSize / 200;
+            updateCentroid(torsoDelta);
+            // print_vec3("Updating centroid to: ", torso->centroid);
+            return;
+        }
+
+        for (int i = int(moveData->moveOddLegs); i < NR_ARMS; i+=2) {
+
+            Arm *arm = arms[i];
+
+            bool reachedGoal = arms[i]->getError() == 0;
+
+            /* if we've changed direction, or if the arm has reached it's 
+               previous delta (but hasn't finished a step), update the goal */
+            if (directionChanged || 
+                (reachedGoal && deltas[i] < moveData->numDeltas)) {
+
+                if (directionChanged) {
+                    // reset number of deltas if we've changed direction
+                    // print_vec3("New direction: ", direction);
+                    deltas[i] = 0;
+                } 
+                deltas[i]++;
+                // cout << "Delta for arm " << i << " is " << deltas[i] << endl;
+
+                arms[i]->goal = arms[i]->getPincerEnd() + deltaSize;
+                clampToSurface(arms[i]->goal, surface, time);
+                completedStep = false;
+            } else {
+                arms[i]->IKUpdate();
+                if (deltas[i] != moveData->numDeltas || !reachedGoal) {
+                    completedStep = false;
+                }
+            }
+        }
+        // torso
+
+        moveData->direction = direction;
+        if (completedStep) {
+            cout << "===============" << endl;
+            cout << "===============" << endl;
+            cout << "Completed step." << endl;
+            cout << "===============" << endl;
+            cout << "===============" << endl;
+            moveData->newTorsoLocation = torso->centroid + stepSize/2;
+            moveData->moveOddLegs = !moveData->moveOddLegs;
+            for (int i = 0; i < NR_ARMS; i++) {
+                deltas[i] = 0; 
+            }
+        }
         return;
     }
+
+    void touchSurfaceImmediately(float time) {
+        for (Arm* arm : arms) {
+            Point3f pos = arm->getPincerEnd();
+            arm->goal = Point3f(pos.x(), surface(pos.x(), pos.z(), time), pos.z());
+            while (!arm->IKUpdate()) {};
+        }
+    }
+
 };
 
 struct Scene {
