@@ -165,14 +165,11 @@ struct Thing {
                 }
             }
         }
-        // torso
 
         moveData->direction = direction;
         if (completedStep) {
             cout << "===============" << endl;
-            cout << "===============" << endl;
             cout << "Completed step." << endl;
-            cout << "===============" << endl;
             cout << "===============" << endl;
             moveData->newTorsoLocation = torso->centroid + stepSize/2;
             moveData->moveOddLegs = !moveData->moveOddLegs;
