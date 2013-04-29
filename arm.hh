@@ -272,7 +272,7 @@ struct Arm {
 
         /* σ = (J+)x * Δp */
         MatrixXf Jinv = svd.matrixV() * inv.asDiagonal() * svd.matrixU().adjoint();
-        Param vdelta = (Jinv) * (goal - endEffector)/100;
+        Param vdelta = (Jinv) * (goal - endEffector) / 3;
         
         updatePosition(vdelta);
         float currentError;
