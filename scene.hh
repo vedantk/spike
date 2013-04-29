@@ -44,7 +44,7 @@ struct MoveData {
 
     MoveData(float step) : stepSize(step) {
         moveOddLegs = true; 
-        numDeltas = 1;
+        numDeltas = 10;
     }
 };
 
@@ -124,7 +124,6 @@ struct Thing {
         float torsoError = (torso->centroid - moveData->newTorsoLocation).norm();
         if (torsoError > 1.0e-3) {
             for (Arm *arm : arms) {
-                arm->IKUpdate();
                 while(!arm->IKUpdate());
             }
             Point3f torsoDelta = deltaSize / 200;
@@ -143,11 +142,8 @@ struct Thing {
             if (directionChanged || 
                 (reachedGoal && deltas[i] < moveData->numDeltas)) {
 
-                if (directionChanged) {
-                    // reset number of deltas if we've changed direction
-                    deltas[i] = 0;
-                } 
-                deltas[i]++;
+                // reset number of deltas if we've changed direction
+                deltas[i] = directionChanged ? 1 : deltas[i] + 1;
 
                 arms[i]->goal = arms[i]->getPincerEnd() + deltaSize;
                 clampToSurface(arms[i]->goal, surface, time);
