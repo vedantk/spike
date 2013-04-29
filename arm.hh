@@ -244,8 +244,7 @@ struct Arm {
     }
 
     // return error if less than tolerance, else return 0
-    inline float getError() {
-        const float posTolerance = 1.0e-1;
+    inline float getError(float posTolerance = 1.0e-1) {
         float error = (endEffector - goal).norm();
         if (error < posTolerance) {
             return 0;
@@ -254,12 +253,12 @@ struct Arm {
         }
     }
 
-    bool IKUpdate()
+    bool IKUpdate(float posTolerance = 1.0e-1)
     {
         const float tolerance = 1.0e-5;
         const int maxSplits = 8;
         
-        float error = getError();
+        float error = getError(posTolerance);
         if (error == 0) return true;
         
         computeJacobian();
