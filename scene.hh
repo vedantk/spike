@@ -197,9 +197,6 @@ struct Thing {
 
         moveData->direction = direction;
         if (completedStep) {
-            cout << "===============" << endl;
-            cout << "Completed step." << endl;
-            cout << "===============" << endl;
             moveData->moveOddLegs = !moveData->moveOddLegs;
             for (int i = 0; i < NR_ARMS; i++) {
                 deltas[i] = 0; 
