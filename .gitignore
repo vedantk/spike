@@ -9,5 +9,7 @@ test
 *.sln
 *.suo
 *.vcxproj*
+*.psess
+*.vspx
 Debug/
 FreeImage.dll
