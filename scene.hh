@@ -20,10 +20,7 @@ void renderSurface(Surface fn, float t, float x0, float xf, float z0, float zf)
             float ul = fn(x, z, t);
             float ur = fn(x + step, z, t);
 
-            glcol3f((
-                Point3f(ur*ul*lr, lr*ll, ll).normalized() +
-                Point3f(ur - floor(ur), ul - floor(ul), ll - floor(ll)).normalized()
-            ).normalized());
+            glColor3f(sin(x), cos(z), 0);
 
             glBegin(GL_POLYGON);
                 glVertex3f(x, ul, z);
@@ -98,17 +95,37 @@ struct Thing {
         return torso->centroid;
     }
 
-    void updateCentroid(Vector3f& delta) {
+    inline void updateCentroid(Vector3f& delta) {
         torso->centroid += delta;
         for (Arm* arm : arms) {
+            while (!arm->IKUpdate());
             arm->endEffector = arm->getPincerEnd(); 
         }
+    }
+
+    inline void setCentroid(Point3f& pos) {
+        torso->centroid = pos;
+        for (Arm* arm : arms) {
+            while (!arm->IKUpdate());
+            arm->endEffector = arm->getPincerEnd(); 
+        }
+    }
+
+    inline Point3f calculateCenter() {
+        Point3f c(0,0,0);
+        for (Arm *arm : arms) {
+            c += arm->endEffector;
+        }
+        c /= NR_ARMS;
+        c[1] = torso->centroid.y();
+        return c;
     }
 
     void moveTowards(FloatPair dir, float time)
     {
         Vector3f direction(dir.first, 0, dir.second);
         direction.normalized();
+
         /* goal is direction vector on the xz plane */
         Vector3f stepSize = direction * moveData->stepSize;
         Vector3f deltaSize = stepSize / moveData->numDeltas;
@@ -117,19 +134,7 @@ struct Thing {
         bool completedStep = true;
         bool directionChanged = direction != moveData->direction;
 
-        if (directionChanged) {
-            moveData->newTorsoLocation = torso->centroid;
-        }
-
-        float torsoError = (torso->centroid - moveData->newTorsoLocation).norm();
-        if (torsoError > 1.0e-3) {
-            for (Arm *arm : arms) {
-                while(!arm->IKUpdate());
-            }
-            Point3f torsoDelta = deltaSize / 50;
-            updateCentroid(torsoDelta);
-            return;
-        }
+        setCentroid(calculateCenter());
 
         for (int i = int(moveData->moveOddLegs); i < NR_ARMS; i+=2) {
 
@@ -161,7 +166,6 @@ struct Thing {
             cout << "===============" << endl;
             cout << "Completed step." << endl;
             cout << "===============" << endl;
-            moveData->newTorsoLocation = torso->centroid + stepSize/2;
             moveData->moveOddLegs = !moveData->moveOddLegs;
             for (int i = 0; i < NR_ARMS; i++) {
                 deltas[i] = 0; 
