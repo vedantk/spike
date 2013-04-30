@@ -9,6 +9,8 @@ Vedant (branch ik-fast)
 - make goal points closer to the body
 - ik constraints; clamping in updatePosition(delta)
 - inline partialDerivative()
+- give up before you actually reach the goal to avoid problems with slow convergence
+- make sure we stay on top of the surface
 
 Future
 - turning while walking
