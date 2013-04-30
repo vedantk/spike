@@ -126,7 +126,7 @@ struct Thing {
             for (Arm *arm : arms) {
                 while(!arm->IKUpdate());
             }
-            Point3f torsoDelta = deltaSize / 200;
+            Point3f torsoDelta = deltaSize / 50;
             updateCentroid(torsoDelta);
             return;
         }
@@ -149,7 +149,6 @@ struct Thing {
 
                 completedStep = false;
             } else {
-
                 if (deltas[i] != moveData->numDeltas || !reachedGoal) {
                     arms[i]->IKUpdate();
                     completedStep = false;
