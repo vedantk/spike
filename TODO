@@ -1,32 +1,22 @@
-TURNING WHILE WALKING
-LAZERRRS
-ACCELERATION BONUSES
-PICKUPS
+Poster, lab report
 
-Perfect creature rendering
-- Move the creature.
+Vedant (branch ik-fast)
+- implement camera lock
+- speed up ik if possible
+- geometrically convergent goal points
+- test with more time-variant surfaces
+- make sure the torso never escapes the support polygon
+- make goal points closer to the body
+- ik constraints; clamping in updatePosition(delta)
+- inline partialDerivative()
 
-IK
-- Model of creature walking.
-- Center of mass computation.
-- Stable walking on unstable surfaces.
-
-Dealing with IK Constraints
-1. Don't deal with them.
-2. Run standard IK (theta = J.inverse() * position.delta()), clamp results.
-3. Again run standard IK, but project results onto the constraint boundary (this may be marginally more intelligent than doing clamping).
-4. Use Lagrange multipliers.
-
-Extras
-- Acceleration of the creature.
-- Jumping.
-- Adding multiple creatures to the scene, focus switching.
-- Rendering multiple surfaces, jumping between surfaces.
-- Gravity.
-
-Special effects
+Future
+- turning while walking
+- acceleration + gravity
+- jumping
+- multiple surfaces
+- pickups
+- lazers
+- lagrange multipliers for constraints
 - Lighting, smooth shading.
 - Environment maps + reflections.
-- Define a suite of varying surfaces.
-
-
