@@ -78,6 +78,11 @@ inline void glvtx3f(Vector3f vec)
     glVertex3f(expand_vec3(vec));
 }
 
+inline void glnorm3f(Vector3f vec)
+{
+    glNormal3f(expand_vec3(vec));
+}
+
 inline void glcol3f(Vector3f vec)
 {
     glColor3f(expand_vec3(vec));

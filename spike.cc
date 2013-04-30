@@ -18,6 +18,21 @@ static void display()
     glEnable(GL_DEPTH_TEST);
     glShadeModel(GL_SMOOTH);
 
+    // need to find a better setting for scene.eye
+    GLfloat light_position[] = { expand_vec3(scene.eye), 0 };
+    GLfloat light_ambient[] = { 0.1, 0.1, 0.1, 1.0 };
+    GLfloat light_diffuse[] = { 0.3, 0.3, 0.3, 1 };
+    GLfloat light_specular[] = { 1, 1, 1, 1 };
+
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glEnable(GL_NORMALIZE);
+    setNormalMaterial();
+
     scene.reorient();
     scene.setupProjection();
     scene.render();
@@ -92,19 +107,19 @@ static void handle_key_special(int key, int, int)
 
     switch (key) {
     case GLUT_KEY_UP:
-        scene.getFocusedThing()->moveTowards(make_pair(0, up), scene.time);
+        scene.getFocusedThing()->moveTowards(make_pair(0.0f, up), scene.time);
         break;
 
     case GLUT_KEY_LEFT:
-        scene.getFocusedThing()->moveTowards(make_pair(-right, 0), scene.time);
+        scene.getFocusedThing()->moveTowards(make_pair(-right, 0.0f), scene.time);
         break;
 
     case GLUT_KEY_DOWN:
-        scene.getFocusedThing()->moveTowards(make_pair(0, -up), scene.time);
+        scene.getFocusedThing()->moveTowards(make_pair(0.0f, -up), scene.time);
         break;
 
     case GLUT_KEY_RIGHT:
-        scene.getFocusedThing()->moveTowards(make_pair(right, 0), scene.time);
+        scene.getFocusedThing()->moveTowards(make_pair(right, 0.0f), scene.time);
         break;
 
     default:
@@ -134,7 +149,10 @@ static float timeInvariantWaveSurface(float x, float z, float t)
 
 static void init()
 {
-    scene.addThing(new Thing(flatSurface, Point3f(0, 2, -8)));
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    scene.addThing(new Thing(timeInvariantWaveSurface, Point3f(0, 2, -8)));
     scene.getFocusedThing()->touchSurfaceImmediately(scene.time);
 }
 

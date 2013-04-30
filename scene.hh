@@ -10,6 +10,34 @@
 
 typedef float (*Surface)(float x, float z, float t);
 
+void setNormalMaterial() {
+   GLfloat mat_ambient[] = {0.4,0.2,0.2,1};
+   GLfloat mat_diffuse[] = {0.4,0.2,0.2,1};
+   GLfloat mat_specular[] = {1,0,0,1};
+
+   glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
+   glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
+   glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+   glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 10);
+
+   glEnable(GL_COLOR_MATERIAL);
+   glColor3f(1, 0, 0);
+}
+
+void setSurfaceMaterial() {
+   GLfloat mat_ambient[]  = {0.2,0.2,0.2,1};
+   GLfloat mat_diffuse[]  = {0.2,0.2,0.8,1};
+   GLfloat mat_specular[] = {0.2,0.2,0.8,1};
+
+   glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
+   glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
+   glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+   glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 10);
+
+   glEnable(GL_COLOR_MATERIAL);
+   glColor3f(0.5, 0.5, 0.5);
+}
+
 void renderSurface(Surface fn, float t, float x0, float xf, float z0, float zf)
 {
     const float step = 0.1;
@@ -20,12 +48,15 @@ void renderSurface(Surface fn, float t, float x0, float xf, float z0, float zf)
             float ul = fn(x, z, t);
             float ur = fn(x + step, z, t);
 
-            glcol3f((
-                Point3f(ur*ul*lr, lr*ll, ll).normalized() +
-                Point3f(ur - floor(ur), ul - floor(ul), ll - floor(ll)).normalized()
-            ).normalized());
+            // glColor3f(sin(x) + cos(z), 0, 0);
+
+            Point3f ulp(x, ul, z);
+            Point3f urp(x + step, ur, z);
+            Point3f lrp(x + step, lr, z + step);
+            Point3f llp(x, ll, z + step);
 
             glBegin(GL_POLYGON);
+                glnorm3f((urp - llp).cross(ulp - lrp));
                 glVertex3f(x, ul, z);
                 glVertex3f(x + step, ur, z);
                 glVertex3f(x + step, lr, z + step);
@@ -62,7 +93,7 @@ struct Thing {
         : surface(surf)
     {
         torso = new Torso(centroid);
-        moveData = new MoveData(2);
+        moveData = new MoveData(1);
 
         for (int i=0; i < NR_ARMS; ++i) {
             /* Place arms radially in a circle on the xz plane. */
@@ -98,17 +129,37 @@ struct Thing {
         return torso->centroid;
     }
 
-    void updateCentroid(Vector3f& delta) {
+    inline void updateCentroid(Vector3f& delta) {
         torso->centroid += delta;
         for (Arm* arm : arms) {
+            while (!arm->IKUpdate());
             arm->endEffector = arm->getPincerEnd(); 
         }
+    }
+
+    inline void setCentroid(Point3f& pos) {
+        torso->centroid = pos;
+        for (Arm* arm : arms) {
+            while (!arm->IKUpdate());
+            arm->endEffector = arm->getPincerEnd(); 
+        }
+    }
+
+    inline Point3f calculateNewCentroid(float time) {
+        Point3f c(0,0,0);
+        for (Arm *arm : arms) {
+            c += arm->endEffector;
+        }
+        c /= NR_ARMS;
+        c[1] = surface(c[0], c[2], time) + (torso->radius * 1.5);
+        return c;
     }
 
     void moveTowards(FloatPair dir, float time)
     {
         Vector3f direction(dir.first, 0, dir.second);
         direction.normalized();
+
         /* goal is direction vector on the xz plane */
         Vector3f stepSize = direction * moveData->stepSize;
         Vector3f deltaSize = stepSize / moveData->numDeltas;
@@ -117,19 +168,7 @@ struct Thing {
         bool completedStep = true;
         bool directionChanged = direction != moveData->direction;
 
-        if (directionChanged) {
-            moveData->newTorsoLocation = torso->centroid;
-        }
-
-        float torsoError = (torso->centroid - moveData->newTorsoLocation).norm();
-        if (torsoError > 1.0e-3) {
-            for (Arm *arm : arms) {
-                while(!arm->IKUpdate());
-            }
-            Point3f torsoDelta = deltaSize / 50;
-            updateCentroid(torsoDelta);
-            return;
-        }
+        setCentroid(calculateNewCentroid(time));
 
         for (int i = int(moveData->moveOddLegs); i < NR_ARMS; i+=2) {
 
@@ -158,10 +197,6 @@ struct Thing {
 
         moveData->direction = direction;
         if (completedStep) {
-            cout << "===============" << endl;
-            cout << "Completed step." << endl;
-            cout << "===============" << endl;
-            moveData->newTorsoLocation = torso->centroid + stepSize/2;
             moveData->moveOddLegs = !moveData->moveOddLegs;
             for (int i = 0; i < NR_ARMS; i++) {
                 deltas[i] = 0; 
@@ -237,6 +272,7 @@ struct Scene {
 
     void render()
     {
+        setNormalMaterial();
         for (size_t i=0; i < things.size(); ++i) {
             things[i]->render();
         }
@@ -245,6 +281,7 @@ struct Scene {
         float xf = max(lookAt.x(), eye.x()) + 12;
         float z0 = max(lookAt.z(), eye.z()) + 12;
         float zf = min(lookAt.z(), eye.z()) - 12;
+        setSurfaceMaterial();
         renderSurface(getFocusedThing()->surface, time, x0, xf, z0, zf);
     }
 };
