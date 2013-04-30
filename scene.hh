@@ -93,7 +93,7 @@ struct Thing {
         : surface(surf)
     {
         torso = new Torso(centroid);
-        moveData = new MoveData(2);
+        moveData = new MoveData(1);
 
         for (int i=0; i < NR_ARMS; ++i) {
             /* Place arms radially in a circle on the xz plane. */
