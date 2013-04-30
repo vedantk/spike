@@ -105,19 +105,19 @@ static void handle_key(unsigned char key, int, int)
 
     /* rotations */
     case 'W': // rotate "up"
-        scene.rotateEyeAboutRightAxis(camStep * M_PI / 16, true);
+        scene.rotateEyeAboutRightAxis(true);
         break;
 
     case 'S':
-        scene.rotateEyeAboutRightAxis(camStep * M_PI / 16, false);
+        scene.rotateEyeAboutRightAxis(false);
         break;
 
     case 'D':
-        scene.rotateEyeAboutYAxis(camStep * M_PI / 16, true);
+        scene.rotateEyeAboutYAxis(true);
         break;
 
     case 'A':
-        scene.rotateEyeAboutYAxis(camStep * M_PI / 16, false);
+        scene.rotateEyeAboutYAxis(false);
         break;
 
     default:
