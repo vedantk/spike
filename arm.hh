@@ -244,8 +244,7 @@ struct Arm {
     }
 
     // return error if less than tolerance, else return 0
-    inline float getError() {
-        const float posTolerance = 1.0e-1;
+    inline float getError(float posTolerance = 1.0e-1) {
         float error = (endEffector - goal).norm();
         if (error < posTolerance) {
             return 0;
@@ -254,12 +253,12 @@ struct Arm {
         }
     }
 
-    bool IKUpdate()
+    bool IKUpdate(float posTolerance = 1.0e-1)
     {
         const float tolerance = 1.0e-5;
         const int maxSplits = 8;
         
-        float error = getError();
+        float error = getError(posTolerance);
         if (error == 0) return true;
         
         computeJacobian();
@@ -273,7 +272,7 @@ struct Arm {
 
         /* σ = (J+)x * Δp */
         MatrixXf Jinv = svd.matrixV() * inv.asDiagonal() * svd.matrixU().adjoint();
-        Param vdelta = (Jinv) * (goal - endEffector)/100;
+        Param vdelta = (Jinv) * (goal - endEffector) / 3;
         
         updatePosition(vdelta);
         float currentError;
@@ -380,6 +379,14 @@ struct Arm {
         /* Draw the pincer. */
         glColor3f(1.0, 0.0, 0.0);
         drawTetrahedron(center, getArrow(3), getPincerLength());
+
+        // debug
+        /* draw where the goal is */
+        glColor3f(0.3, 0.3, 0.3);
+        glPushMatrix();
+    	glTranslatef(goal.x(), goal.y(), goal.z());
+    	glutSolidSphere(jointRadius, 20, 20);
+    	glPopMatrix();
     }
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
