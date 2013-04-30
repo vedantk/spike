@@ -55,6 +55,7 @@ void renderSurface(Surface fn, float t, float x0, float xf, float z0, float zf)
             Point3f lrp(x + step, lr, z + step);
             Point3f llp(x, ll, z + step);
 
+            // glColor3f(sin(x) + sin(z), 0, 0);
             glBegin(GL_POLYGON);
                 glnorm3f((urp - llp).cross(ulp - lrp));
                 glVertex3f(x, ul, z);
@@ -93,7 +94,7 @@ struct Thing {
         : surface(surf)
     {
         torso = new Torso(centroid);
-        moveData = new MoveData(1);
+        moveData = new MoveData(2);
 
         for (int i=0; i < NR_ARMS; ++i) {
             /* Place arms radially in a circle on the xz plane. */
@@ -130,11 +131,8 @@ struct Thing {
     }
 
     inline void updateCentroid(Vector3f& delta) {
-        torso->centroid += delta;
-        for (Arm* arm : arms) {
-            while (!arm->IKUpdate());
-            arm->endEffector = arm->getPincerEnd(); 
-        }
+        Point3f updatedPoint = torso->centroid + delta;
+        setCentroid(updatedPoint);
     }
 
     inline void setCentroid(Point3f pos) {
@@ -151,7 +149,7 @@ struct Thing {
             c += arm->endEffector;
         }
         c /= NR_ARMS;
-        c[1] = surface(c[0], c[2], time) + (torso->radius * 1.5);
+        c[1] = surface(c[0], c[2], time) + (torso->radius * 3.5);
         return c;
     }
 
@@ -223,14 +221,16 @@ struct Scene {
 
     Point3f eye;
     Point3f lookAt;
-    Vector3f cameraOffset;
+    Vector3f lookDir;
+
+    Vector3f up;
+    Vector3f right;
 
     int focusedThing;
     vector<Thing*> things;
 
     Scene()
-        : vwidth(800), vheight(600), time(0),
-          cameraOffset(Point3f(0, 0, 0)), focusedThing(0)
+        : vwidth(800), vheight(600), time(0), focusedThing(0)
     {}
 
     inline void addThing(Thing* thing)
@@ -248,13 +248,61 @@ struct Scene {
         focusedThing = (focusedThing + 1) % things.size();
     }
 
-    void reorient()
-    {
+    void reorient() {
         const float step = 0.03;
         time += step;
+    }
 
+    void setupEye() {
         lookAt = getFocusedThing()->getCentroid();
-        eye = lookAt + Point3f(0, 15, 5) + cameraOffset;
+        eye = lookAt + Point3f(0, 15, 5);
+        updateLookVectors();
+    }
+
+    void updateLookVectors() {
+        updateLookDir();
+        updateRight();
+        updateUp();
+    }
+    
+    inline void updateLookDir() {
+        lookDir = (lookAt - eye).normalized();
+    }
+
+    inline void updateRight() {
+        right = (Vector3f(0,-1,0).cross(lookDir)).normalized();
+    }
+
+    inline void updateUp() { 
+        up = (right.cross(lookDir)).normalized();
+    }
+
+    void rotateEyeAboutYAxis(float angle, bool clockwise) {
+        Vector3f y(0,1,0);
+        rotateEyeAboutAxis(y, angle, clockwise);
+        updateLookDir();
+        updateRight();
+    }
+
+    void rotateEyeAboutRightAxis(float angle, bool clockwise) {
+        rotateEyeAboutAxis(right, angle, clockwise);
+        updateLookDir();
+        updateUp();
+    }
+
+    inline void rotateEyeAboutAxis(Vector3f& axis, float angle, bool clockwise) {
+        // apparently eigen does things counterclockwise
+        angle = clockwise ? -angle : angle;
+        Matrix3f rotate = (AngleAxisf(angle, axis)).toRotationMatrix();
+        eye = (rotate * (eye - lookAt)) + lookAt;
+    }
+
+    void printLookVectors()
+    {
+        print_vec3("Eye: ", eye);
+        print_vec3("Look at: ", lookAt);
+        print_vec3("Right: ", right);
+        print_vec3("Up: ", up);
     }
 
     void setupProjection()
@@ -267,7 +315,7 @@ struct Scene {
         glLoadIdentity();
 
         gluLookAt(eye.x(), eye.y(), eye.z(), lookAt.x(), lookAt.y(), lookAt.z(),
-                  0, 1, 0);
+                  up.x(), up.y(), up.z());
     }
 
     void render()
