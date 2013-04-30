@@ -227,7 +227,9 @@ struct Scene {
     Vector3f right;
 
     Matrix3f rightRotate;
+    Matrix3f rightRotateInv;
     Matrix3f yRotate;
+    Matrix3f yRotateInv;
     bool updateRightRotateMatrix;
 
     float rotationStep;
@@ -268,6 +270,7 @@ struct Scene {
         rotationStep = M_PI / 64.0f;
         Vector3f y(0,1,0);
         yRotate = AngleAxisf(rotationStep, y).toRotationMatrix();
+        yRotateInv = yRotate.inverse();
     }
 
     void updateLookVectors() {
@@ -290,7 +293,7 @@ struct Scene {
     }
 
     void rotateEyeAboutYAxis(bool clockwise) {
-        eye = ((clockwise ? yRotate : yRotate.inverse()) * (eye - lookAt)) + lookAt;
+        eye = ((clockwise ? yRotate : yRotateInv) * (eye - lookAt)) + lookAt;
         updateLookDir();
         updateRight();
         updateUp();
@@ -306,9 +309,10 @@ struct Scene {
         clockwise = !clockwise;
         if (updateRightRotateMatrix) {
             rightRotate = AngleAxisf(rotationStep, right).toRotationMatrix();
+            rightRotateInv = rightRotate.inverse();
         }
 
-        eye = ((clockwise ? rightRotate : rightRotate.inverse()) * (eye - lookAt)) + lookAt;
+        eye = ((clockwise ? rightRotate : rightRotateInv) * (eye - lookAt)) + lookAt;
         updateLookDir();
         updateUp();
     }
