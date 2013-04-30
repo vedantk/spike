@@ -144,14 +144,14 @@ struct Thing {
 
                 // reset number of deltas if we've changed direction
                 deltas[i] = directionChanged ? 1 : deltas[i] + 1;
-
                 arms[i]->goal = arms[i]->getPincerEnd() + deltaSize;
                 clampToSurface(arms[i]->goal, surface, time);
 
                 completedStep = false;
             } else {
-                arms[i]->IKUpdate();
+
                 if (deltas[i] != moveData->numDeltas || !reachedGoal) {
+                    arms[i]->IKUpdate();
                     completedStep = false;
                 }
             }
