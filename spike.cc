@@ -152,7 +152,8 @@ static void init()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
-    scene.addThing(new Thing(timeInvariantWaveSurface, Point3f(0, 2, -8)));
+    scene.addThing(new Thing(waveSurface, Point3f(0, 5, -8)));
+    scene.addThing(new Thing(waveSurface, Point3f(0, 5, -2)));
     scene.getFocusedThing()->touchSurfaceImmediately(scene.time);
 }
 

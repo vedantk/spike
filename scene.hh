@@ -137,7 +137,7 @@ struct Thing {
         }
     }
 
-    inline void setCentroid(Point3f& pos) {
+    inline void setCentroid(Point3f pos) {
         torso->centroid = pos;
         for (Arm* arm : arms) {
             while (!arm->IKUpdate());

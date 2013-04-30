@@ -10,7 +10,7 @@ Vedant (branch ik-fast)
 - ik constraints; clamping in updatePosition(delta)
 - inline partialDerivative()
 - give up before you actually reach the goal to avoid problems with slow convergence
-- make sure we stay on top of the surface
+- make sure we stay on top of the surface, even when we're not moving
 
 Future
 - turning while walking

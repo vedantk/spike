@@ -7,7 +7,7 @@
 #include "util.hh"
 #include <FreeImage.h>
 
-#define jointRadius 0.05
+#define jointRadius 0.02
 
 inline Vector3f getDirection(float theta, float phi)
 {
@@ -35,7 +35,7 @@ struct Torso {
     GLuint texID;
 
     Torso(Point3f _centroid)
-        : radius(0.8 /* 0.18 */), centroid(_centroid)
+        : radius(0.1), centroid(_centroid)
     {
         FreeImage_Initialise();
         FIBITMAP* bitmap = FreeImage_Load(FIF_BMP,
@@ -388,10 +388,12 @@ struct Arm {
         // debug
         /* draw where the goal is */
         // glColor3f(0.3, 0.3, 0.3);
+#if 0
         glPushMatrix();
     	glTranslatef(goal.x(), goal.y(), goal.z());
     	glutSolidSphere(jointRadius, 20, 20);
     	glPopMatrix();
+#endif
     }
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
