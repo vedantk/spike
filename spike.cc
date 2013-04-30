@@ -107,19 +107,19 @@ static void handle_key_special(int key, int, int)
 
     switch (key) {
     case GLUT_KEY_UP:
-        scene.getFocusedThing()->moveTowards(make_pair(0, up), scene.time);
+        scene.getFocusedThing()->moveTowards(make_pair(0.0f, up), scene.time);
         break;
 
     case GLUT_KEY_LEFT:
-        scene.getFocusedThing()->moveTowards(make_pair(-right, 0), scene.time);
+        scene.getFocusedThing()->moveTowards(make_pair(-right, 0.0f), scene.time);
         break;
 
     case GLUT_KEY_DOWN:
-        scene.getFocusedThing()->moveTowards(make_pair(0, -up), scene.time);
+        scene.getFocusedThing()->moveTowards(make_pair(0.0f, -up), scene.time);
         break;
 
     case GLUT_KEY_RIGHT:
-        scene.getFocusedThing()->moveTowards(make_pair(right, 0), scene.time);
+        scene.getFocusedThing()->moveTowards(make_pair(right, 0.0f), scene.time);
         break;
 
     default:
