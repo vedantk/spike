@@ -115,11 +115,6 @@ inline Vector3f dehomogenize(const Vector4f& v)
     return Vector3f(v(0), v(1), v(2));
 }
 
-/*
-#define print_vec3(vec) \
-    cout << #vec << cout_expand_vec3(vec) << endl;
-    */
-
 inline void print_vec3(string name, Vector3f& vec)
 {
     cout << name << ": " << cout_expand_vec3(vec) << endl;
@@ -136,8 +131,4 @@ inline void print_vector(vector<T>& lst, int beg, int end)
         }
     }
     cout << "]" << endl;
-}
-
-#define clampToSurface(p, surface, time) { \
-    p[1] = surface(p.x(), p.z(), time); \
 }

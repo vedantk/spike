@@ -20,10 +20,7 @@ void renderSurface(Surface fn, float t, float x0, float xf, float z0, float zf)
             float ul = fn(x, z, t);
             float ur = fn(x + step, z, t);
 
-            glcol3f((
-                Point3f(ur*ul*lr, lr*ll, ll).normalized() +
-                Point3f(ur - floor(ur), ul - floor(ul), ll - floor(ll)).normalized()
-            ).normalized());
+            glcol3f(Point3f(fabs(x*z), 0, ur).normalized());
 
             glBegin(GL_POLYGON);
                 glVertex3f(x, ul, z);
@@ -145,7 +142,9 @@ struct Thing {
                 // reset number of deltas if we've changed direction
                 deltas[i] = directionChanged ? 1 : deltas[i] + 1;
                 arms[i]->goal = arms[i]->getPincerEnd() + deltaSize;
-                clampToSurface(arms[i]->goal, surface, time);
+                arms[i]->goal[1] = surface(arms[i]->goal.x(),
+                                           arms[i]->goal.z(),
+                                           time);
 
                 completedStep = false;
             } else {
@@ -190,13 +189,14 @@ struct Scene {
     Point3f eye;
     Point3f lookAt;
     Vector3f cameraOffset;
+    bool lockCamera;
 
     int focusedThing;
     vector<Thing*> things;
 
     Scene()
         : vwidth(800), vheight(600), time(0),
-          cameraOffset(Point3f(0, 0, 0)), focusedThing(0)
+          cameraOffset(Point3f(0, 0, 0)), lockCamera(false), focusedThing(0)
     {}
 
     inline void addThing(Thing* thing)
@@ -212,6 +212,15 @@ struct Scene {
     inline void cycleFocus()
     {
         focusedThing = (focusedThing + 1) % things.size();
+    }
+
+    inline void shiftCamera(float dx, float dy, float dz)
+    {
+        if (!lockCamera) {
+            cameraOffset[0] += dx;
+            cameraOffset[1] += dy;
+            cameraOffset[2] += dz;
+        }
     }
 
     void reorient()

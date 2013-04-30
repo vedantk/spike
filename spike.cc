@@ -21,7 +21,6 @@ static void display()
     scene.reorient();
     scene.setupProjection();
     scene.render();
-    // scene.getFocusedThing()->touchSurfaceImmediately(scene.time);
 
     glFlush();
     glutSwapBuffers();
@@ -54,28 +53,32 @@ static void handle_key(unsigned char key, int, int)
         isFullscreen = !isFullscreen;
         break;
 
+    case 'l':
+        scene.lockCamera = !scene.lockCamera;
+        cout << "Camera lock status: " << scene.lockCamera << endl;
+
     case 'w':
-        scene.cameraOffset(1) += camStep;
+        scene.shiftCamera(0, camStep, 0);
         break;
 
     case 'a':
-        scene.cameraOffset(0) -= camStep;
+        scene.shiftCamera(-camStep, 0, 0);
         break;
 
     case 's':
-        scene.cameraOffset(1) -= camStep;
+        scene.shiftCamera(0, -camStep, 0);
         break;
 
     case 'd':
-        scene.cameraOffset(0) += camStep;
+        scene.shiftCamera(camStep, 0, 0);
         break;
 
     case '+':
-        scene.cameraOffset(2) -= camStep;
+        scene.shiftCamera(0, 0, -camStep);
         break;
 
     case '-':
-        scene.cameraOffset(2) += camStep;
+        scene.shiftCamera(0, 0, camStep);
         break;
 
     default:
@@ -87,6 +90,7 @@ static void handle_key(unsigned char key, int, int)
 
 static void handle_key_special(int key, int, int)
 {
+    // XXX
     float up = 1; // fsign(scene.lookAt.z());
     float right = 1; // fsign(scene.lookAt.x());
 
@@ -125,11 +129,6 @@ static float flatSurface(float x, float z, float t)
 static float waveSurface(float x, float z, float t)
 {
     return 2 + sin(t + x) + cos(t + z);
-}
-
-static float timeInvariantWaveSurface(float x, float z, float t) 
-{
-    return 2 + sin(x) + cos(z);
 }
 
 static void init()
