@@ -309,7 +309,6 @@ struct Scene {
         }
 
         eye = ((clockwise ? rightRotate : rightRotate.inverse()) * (eye - lookAt)) + lookAt;
-        print_vec3("Eye: ", eye);
         updateLookDir();
         updateUp();
     }
