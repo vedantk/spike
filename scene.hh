@@ -145,13 +145,13 @@ struct Thing {
         }
     }
 
-    inline Point3f calculateCenter() {
+    inline Point3f calculateNewCentroid(float time) {
         Point3f c(0,0,0);
         for (Arm *arm : arms) {
             c += arm->endEffector;
         }
         c /= NR_ARMS;
-        c[1] = torso->centroid.y();
+        c[1] = surface(c[0], c[2], time) + (torso->radius * 1.5);
         return c;
     }
 
@@ -168,7 +168,7 @@ struct Thing {
         bool completedStep = true;
         bool directionChanged = direction != moveData->direction;
 
-        setCentroid(calculateCenter());
+        setCentroid(calculateNewCentroid(time));
 
         for (int i = int(moveData->moveOddLegs); i < NR_ARMS; i+=2) {
 
