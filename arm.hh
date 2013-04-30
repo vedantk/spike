@@ -290,7 +290,7 @@ struct Arm {
     Point3f drawJoint(const Point3f& segmentEnd, const Vector3f& arrow)
     {
     	Point3f center = segmentEnd + jointRadius * arrow;
-    	glColor3f(0.4, 0.1, 0.1);
+    	// glColor3f(0.4, 0.1, 0.1);
         glPushMatrix();
     	glTranslatef(center.x(), center.y(), center.z());
     	glutSolidSphere(jointRadius, 20, 20);
@@ -325,6 +325,7 @@ struct Arm {
         Point3f tip = center + length * arrow;
 
         /* Draw the base. */
+        glnorm3f((ur - ll).cross(lr - ul));
         glBegin(GL_POLYGON);
             glvtx3f(ll);
             glvtx3f(lr);
@@ -334,18 +335,22 @@ struct Arm {
 
         /* Draw each face. */
         glBegin(GL_TRIANGLES);
+            glnorm3f((lr - ll).cross(tip - ll));
             glvtx3f(ll);
             glvtx3f(lr);
             glvtx3f(tip);
 
+            glnorm3f((ul - ll).cross(tip - ll));
             glvtx3f(ll);
             glvtx3f(ul);
             glvtx3f(tip);
 
+            glnorm3f((ul - ur).cross(tip - ur));
             glvtx3f(ur);
             glvtx3f(ul);
             glvtx3f(tip);
 
+            glnorm3f((lr - ur).cross(tip - ur));
             glvtx3f(ur);
             glvtx3f(lr);
             glvtx3f(tip);
@@ -361,7 +366,7 @@ struct Arm {
         center += getArrow(1) * jointRadius;
 
         /* Draw the shoulder tetrahedron. */
-        glColor3f(0xff / 255.0, 0x9e / 255.0, 0.0);
+        // glColor3f(0xff / 255.0, 0x9e / 255.0, 0.0);
         drawTetrahedron(center, getArrow(1), getLength(0));
 
         /* Draw the elbow joint. */
@@ -369,7 +374,7 @@ struct Arm {
         center += getArrow(2) * jointRadius;
 
         /* Draw the forearm tetrahedron. */
-        glColor3f(0x09 / 255.0, 0x66 / 255.0, 0xde / 255.0);
+        // glColor3f(0x09 / 255.0, 0x66 / 255.0, 0xde / 255.0);
         drawTetrahedron(center, getArrow(2), getLength(1));
 
         /* Draw the wrist joint. */
@@ -377,12 +382,12 @@ struct Arm {
         center += getArrow(3) * jointRadius;
 
         /* Draw the pincer. */
-        glColor3f(1.0, 0.0, 0.0);
+        // glColor3f(1.0, 0.0, 0.0);
         drawTetrahedron(center, getArrow(3), getPincerLength());
 
         // debug
         /* draw where the goal is */
-        glColor3f(0.3, 0.3, 0.3);
+        // glColor3f(0.3, 0.3, 0.3);
         glPushMatrix();
     	glTranslatef(goal.x(), goal.y(), goal.z());
     	glutSolidSphere(jointRadius, 20, 20);

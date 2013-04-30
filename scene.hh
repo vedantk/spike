@@ -10,6 +10,34 @@
 
 typedef float (*Surface)(float x, float z, float t);
 
+void setNormalMaterial() {
+   GLfloat mat_ambient[] = {0.4,0.2,0.2,1};
+   GLfloat mat_diffuse[] = {0.4,0.2,0.2,1};
+   GLfloat mat_specular[] = {1,0,0,1};
+
+   glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
+   glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
+   glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+   glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 10);
+
+   glEnable(GL_COLOR_MATERIAL);
+   glColor3f(1, 0, 0);
+}
+
+void setSurfaceMaterial() {
+   GLfloat mat_ambient[]  = {0.2,0.2,0.2,1};
+   GLfloat mat_diffuse[]  = {0.2,0.2,0.8,1};
+   GLfloat mat_specular[] = {0.2,0.2,0.8,1};
+
+   glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
+   glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
+   glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+   glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 10);
+
+   glEnable(GL_COLOR_MATERIAL);
+   glColor3f(0.5, 0.5, 0.5);
+}
+
 void renderSurface(Surface fn, float t, float x0, float xf, float z0, float zf)
 {
     const float step = 0.1;
@@ -20,9 +48,15 @@ void renderSurface(Surface fn, float t, float x0, float xf, float z0, float zf)
             float ul = fn(x, z, t);
             float ur = fn(x + step, z, t);
 
-            glColor3f(sin(x), cos(z), 0);
+            // glColor3f(sin(x) + cos(z), 0, 0);
+
+            Point3f ulp(x, ul, z);
+            Point3f urp(x + step, ur, z);
+            Point3f lrp(x + step, lr, z + step);
+            Point3f llp(x, ll, z + step);
 
             glBegin(GL_POLYGON);
+                glnorm3f((urp - llp).cross(ulp - lrp));
                 glVertex3f(x, ul, z);
                 glVertex3f(x + step, ur, z);
                 glVertex3f(x + step, lr, z + step);
@@ -241,6 +275,7 @@ struct Scene {
 
     void render()
     {
+        setNormalMaterial();
         for (size_t i=0; i < things.size(); ++i) {
             things[i]->render();
         }
@@ -249,6 +284,7 @@ struct Scene {
         float xf = max(lookAt.x(), eye.x()) + 12;
         float z0 = max(lookAt.z(), eye.z()) + 12;
         float zf = min(lookAt.z(), eye.z()) - 12;
+        setSurfaceMaterial();
         renderSurface(getFocusedThing()->surface, time, x0, xf, z0, zf);
     }
 };
