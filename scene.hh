@@ -94,7 +94,7 @@ struct Thing {
         : surface(surf)
     {
         torso = new Torso(centroid);
-        moveData = new MoveData(2);
+        moveData = new MoveData(1.25);
 
         for (int i=0; i < NR_ARMS; ++i) {
             /* Place arms radially in a circle on the xz plane. */
@@ -117,8 +117,18 @@ struct Thing {
         }
     }
     
-    void render()
+    void render(float time)
     {
+        float targetY = surface(torso->centroid.x(),
+                                torso->centroid.z(),
+                                time) + 1.5;
+        // float centroidY = torso->centroid.y();
+        // if (centroidY < targetY) {
+            torso->centroid[1] = targetY;
+        // }
+        //
+        touchSurfaceImmediately(time, true);
+
         torso->render();
         for (int i=0; i < NR_ARMS; ++i) {
             arms[i]->render();
@@ -149,7 +159,7 @@ struct Thing {
             c += arm->endEffector;
         }
         c /= NR_ARMS;
-        c[1] = surface(c[0], c[2], time) + (torso->radius * 3.5);
+        c[1] = surface(c[0], c[2], time) + (torso->radius * 10.5);
         return c;
     }
 
@@ -203,11 +213,26 @@ struct Thing {
         return;
     }
 
-    void touchSurfaceImmediately(float time) {
+    void touchSurfaceImmediately(float time, bool renderCtx = false) {
         for (Arm* arm : arms) {
+            Point3f oldGoal;
             Point3f pos = arm->getPincerEnd();
+
+            if (renderCtx)
+                oldGoal = arm->goal;
+
             arm->goal = Point3f(pos.x(), surface(pos.x(), pos.z(), time), pos.z());
             while (!arm->IKUpdate()) {};
+
+            glPushMatrix();
+            glTranslatef(arm->goal.x(), arm->goal.y(), arm->goal.z());
+            glColor3f(1, 1, 0);
+            glutSolidSphere(0.1, 30, 30);
+            glColor3f(1, 0, 0);
+            glPopMatrix();
+            
+            if (renderCtx)
+                arm->goal = oldGoal;
         }
     }
 
@@ -342,7 +367,7 @@ struct Scene {
     {
         setNormalMaterial();
         for (size_t i=0; i < things.size(); ++i) {
-            things[i]->render();
+            things[i]->render(time);
         }
 
         float x0 = min(lookAt.x(), eye.x()) - 12;
