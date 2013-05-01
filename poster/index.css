@@ -3,11 +3,11 @@ html, body {
   padding : 0;
   color : #ccc;
   font-family : "Palatino Linotype", sans-serif;
-  background : #222;
+  background : #050505;
 }
 
 #title {
-  background : #111;
+  background : #42001B;
   color      : #ddd;
   padding    : 2em;
 }
@@ -40,7 +40,8 @@ h5 {
 .screenshot-explanation {
   margin  : 40px 0;
   padding : 30px 50px;
-  background : #555;
+  background : #191919;
+  box-shadow : 0px 0px 20px 1px #050505;
   color   : #ddd;
 }
 
@@ -61,7 +62,7 @@ h5 {
 
 .screenshot .caption {
   font-size : 0.8em;
-  text-shadow : 0px 0px 20px #fff;
+  text-shadow : 0px 0px 1px #444;
 }
 
 .explanation {

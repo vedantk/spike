@@ -180,6 +180,9 @@ static void init()
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
     scene.addThing(new Thing(timeInvariantWaveSurface, Point3f(0, 2, -8)));
+    for (Thing *thing : scene.things) {
+        thing->touchSurfaceImmediately(scene.time);
+    }
     scene.getFocusedThing()->touchSurfaceImmediately(scene.time);
 
     scene.setupEye();
