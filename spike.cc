@@ -53,7 +53,6 @@ void reshape(int w, int h)
 
 static void handle_key(unsigned char key, int, int)
 {
-    scene.printLookVectors();
     const float camStep = 0.5;
     static bool isFullscreen = false;
     Point3f relativeEye;
