@@ -226,11 +226,17 @@ struct Scene {
     Vector3f up;
     Vector3f right;
 
+    Matrix3f rightRotate;
+    Matrix3f yRotate;
+    bool updateRightRotateMatrix;
+
+    float rotationStep;
+
     int focusedThing;
     vector<Thing*> things;
 
     Scene()
-        : vwidth(800), vheight(600), time(0), focusedThing(0)
+        : vwidth(800), vheight(600), time(0), focusedThing(0), updateRightRotateMatrix(true)
     {}
 
     inline void addThing(Thing* thing)
@@ -257,6 +263,11 @@ struct Scene {
         lookAt = getFocusedThing()->getCentroid();
         eye = lookAt + Point3f(0, 15, 5);
         updateLookVectors();
+
+        // setup rotations
+        rotationStep = M_PI / 64.0f;
+        Vector3f y(0,1,0);
+        yRotate = AngleAxisf(rotationStep, y).toRotationMatrix();
     }
 
     void updateLookVectors() {
@@ -271,30 +282,36 @@ struct Scene {
 
     inline void updateRight() {
         right = (Vector3f(0,-1,0).cross(lookDir)).normalized();
+        updateRightRotateMatrix = true;
     }
 
     inline void updateUp() { 
         up = (right.cross(lookDir)).normalized();
     }
 
-    void rotateEyeAboutYAxis(float angle, bool clockwise) {
-        Vector3f y(0,1,0);
-        rotateEyeAboutAxis(y, angle, clockwise);
+    void rotateEyeAboutYAxis(bool clockwise) {
+        eye = ((clockwise ? yRotate : yRotate.inverse()) * (eye - lookAt)) + lookAt;
         updateLookDir();
         updateRight();
-    }
-
-    void rotateEyeAboutRightAxis(float angle, bool clockwise) {
-        rotateEyeAboutAxis(right, angle, clockwise);
-        updateLookDir();
         updateUp();
     }
 
-    inline void rotateEyeAboutAxis(Vector3f& axis, float angle, bool clockwise) {
-        // apparently eigen does things counterclockwise
-        angle = clockwise ? -angle : angle;
-        Matrix3f rotate = (AngleAxisf(angle, axis)).toRotationMatrix();
-        eye = (rotate * (eye - lookAt)) + lookAt;
+    void rotateEyeAboutRightAxis(bool clockwise) {
+        /*
+            for some reason, clockwise becomes counterclockwise
+
+            note:   we can't use a negative in front of right in 
+                    true 184-style, since it has to be a const reference
+        */
+        clockwise = !clockwise;
+        if (updateRightRotateMatrix) {
+            rightRotate = AngleAxisf(rotationStep, right).toRotationMatrix();
+        }
+
+        eye = ((clockwise ? rightRotate : rightRotate.inverse()) * (eye - lookAt)) + lookAt;
+        print_vec3("Eye: ", eye);
+        updateLookDir();
+        updateUp();
     }
 
     void printLookVectors()
