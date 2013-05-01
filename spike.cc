@@ -11,6 +11,24 @@
 struct Scene scene;
 Point3f origEye;
 
+static float flatSurface(float x, float z, float t)
+{
+    (void) x;
+    (void) z;
+    (void) t;
+    return 0.5;
+}
+
+static float waveSurface(float x, float z, float t)
+{
+    return 2 + sin(t + x) + cos(t + z);
+}
+
+static float timeInvariantWaveSurface(float x, float z, float t) 
+{
+    return 2 + sin(x) + cos(z);
+}
+
 static void display()
 {
     glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -59,6 +77,24 @@ static void handle_key(unsigned char key, int, int)
     Matrix3f rotate;
 
     switch (key) {
+    case 'o':
+        for (size_t i=0; i < scene.things.size(); ++i) {
+            scene.things[i]->surface = flatSurface;
+        }
+        break;
+
+    case 'p':
+        for (size_t i=0; i < scene.things.size(); ++i) {
+            scene.things[i]->surface = timeInvariantWaveSurface;
+        }
+        break;
+
+    case 'i':
+        for (size_t i=0; i < scene.things.size(); ++i) {
+            scene.things[i]->surface = waveSurface;
+        }
+        break;
+
     case 'Q':
         exit(0);
         break;
@@ -154,24 +190,6 @@ static void handle_key_special(int key, int, int)
     }
 
     return;
-}
-
-static float flatSurface(float x, float z, float t)
-{
-    (void) x;
-    (void) z;
-    (void) t;
-    return 0.5;
-}
-
-static float waveSurface(float x, float z, float t)
-{
-    return 2 + sin(t + x) + cos(t + z);
-}
-
-static float timeInvariantWaveSurface(float x, float z, float t) 
-{
-    return 2 + sin(x) + cos(z);
 }
 
 static void init()
