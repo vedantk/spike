@@ -9,6 +9,7 @@
 #define INIT_HEIGHT 600
 
 struct Scene scene;
+Point3f origEye;
 
 static void display()
 {
@@ -19,7 +20,7 @@ static void display()
     glShadeModel(GL_SMOOTH);
 
     // need to find a better setting for scene.eye
-    GLfloat light_position[] = { expand_vec3(scene.eye), 0 };
+    GLfloat light_position[] = { expand_vec3(origEye), 0 };
     GLfloat light_ambient[] = { 0.1, 0.1, 0.1, 1.0 };
     GLfloat light_diffuse[] = { 0.3, 0.3, 0.3, 1 };
     GLfloat light_specular[] = { 1, 1, 1, 1 };
@@ -52,11 +53,14 @@ void reshape(int w, int h)
 
 static void handle_key(unsigned char key, int, int)
 {
+    scene.printLookVectors();
     const float camStep = 0.5;
     static bool isFullscreen = false;
+    Point3f relativeEye;
+    Matrix3f rotate;
 
     switch (key) {
-    case 'q':
+    case 'Q':
         exit(0);
         break;
 
@@ -69,28 +73,51 @@ static void handle_key(unsigned char key, int, int)
         isFullscreen = !isFullscreen;
         break;
 
-    case 'w':
-        scene.cameraOffset(1) += camStep;
+    /* translations */
+    case 'w': // "up"
+        scene.eye += camStep * scene.up;
+        scene.lookAt += camStep * scene.up;
         break;
 
-    case 'a':
-        scene.cameraOffset(0) -= camStep;
+    case 'a': // "left"
+        scene.eye -= camStep * scene.right;
+        scene.lookAt -= camStep * scene.right;
         break;
 
-    case 's':
-        scene.cameraOffset(1) -= camStep;
+    case 's': // "down"
+        scene.eye -= camStep * scene.up;
+        scene.lookAt -= camStep * scene.up;
         break;
 
-    case 'd':
-        scene.cameraOffset(0) += camStep;
+    case 'd': // "right"
+        scene.eye += camStep * scene.right;
+        scene.lookAt += camStep * scene.right;
         break;
 
-    case '+':
-        scene.cameraOffset(2) -= camStep;
+    /* zoom */
+    case 'q': // "zoom out"
+        scene.eye -= camStep * scene.lookDir;
         break;
 
-    case '-':
-        scene.cameraOffset(2) += camStep;
+    case 'e': // "zoom out"
+        scene.eye += camStep * scene.lookDir;
+        break;
+
+    /* rotations */
+    case 'W': // rotate "up"
+        scene.rotateEyeAboutRightAxis(camStep * M_PI / 16, true);
+        break;
+
+    case 'S':
+        scene.rotateEyeAboutRightAxis(camStep * M_PI / 16, false);
+        break;
+
+    case 'D':
+        scene.rotateEyeAboutYAxis(camStep * M_PI / 16, true);
+        break;
+
+    case 'A':
+        scene.rotateEyeAboutYAxis(camStep * M_PI / 16, false);
         break;
 
     default:
@@ -102,7 +129,8 @@ static void handle_key(unsigned char key, int, int)
 
 static void handle_key_special(int key, int, int)
 {
-    float up = 1; // fsign(scene.lookAt.z());
+    // up is in? i dunno, hack
+    float up = -1; // fsign(scene.lookAt.z());
     float right = 1; // fsign(scene.lookAt.x());
 
     switch (key) {
@@ -154,6 +182,9 @@ static void init()
     glEnable(GL_LIGHT0);
     scene.addThing(new Thing(timeInvariantWaveSurface, Point3f(0, 2, -8)));
     scene.getFocusedThing()->touchSurfaceImmediately(scene.time);
+
+    scene.setupEye();
+    origEye = scene.eye;
 }
 
 int main(int argc, char** argv)

@@ -384,14 +384,6 @@ struct Arm {
         /* Draw the pincer. */
         // glColor3f(1.0, 0.0, 0.0);
         drawTetrahedron(center, getArrow(3), getPincerLength());
-
-        // debug
-        /* draw where the goal is */
-        // glColor3f(0.3, 0.3, 0.3);
-        glPushMatrix();
-    	glTranslatef(goal.x(), goal.y(), goal.z());
-    	glutSolidSphere(jointRadius, 20, 20);
-    	glPopMatrix();
     }
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
