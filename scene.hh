@@ -135,7 +135,7 @@ struct Thing {
         setCentroid(updatedPoint);
     }
 
-    inline void setCentroid(Point3f& pos) {
+    inline void setCentroid(Point3f pos) {
         torso->centroid = pos;
         for (Arm* arm : arms) {
             while (!arm->IKUpdate());
@@ -290,7 +290,11 @@ struct Scene {
     }
 
     void rotateEyeAboutYAxis(bool clockwise) {
-        eye = ((clockwise ? yRotate : yRotate.inverse()) * (eye - lookAt)) + lookAt;
+        MatrixXf rot = yRotate;
+        if (!clockwise) {
+            rot = yRotate.inverse();
+        }
+        eye = (rot * (eye - lookAt)) + lookAt;
         updateLookDir();
         updateRight();
         updateUp();
@@ -308,7 +312,11 @@ struct Scene {
             rightRotate = AngleAxisf(rotationStep, right).toRotationMatrix();
         }
 
-        eye = ((clockwise ? rightRotate : rightRotate.inverse()) * (eye - lookAt)) + lookAt;
+        MatrixXf rot = rightRotate;
+        if (!clockwise) {
+            rot = rot.inverse();
+        }
+        eye = (rot * (eye - lookAt)) + lookAt;
         updateLookDir();
         updateUp();
     }
