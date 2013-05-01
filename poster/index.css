@@ -1,0 +1,73 @@
+html, body {
+  margin : 0;
+  padding : 0;
+  color : #ccc;
+  font-family : "Palatino Linotype", sans-serif;
+  background : #222;
+}
+
+#title {
+  background : #111;
+  color      : #ddd;
+  padding    : 2em;
+}
+h1 {
+  text-align  : center;
+  margin      : 0 auto;
+  font-size   : 4em;
+  font-weight : 100;
+  font-family : "Open Sans", sans-serif;
+}
+
+h3 {
+  text-align  : center;
+  margin      : 0 auto;
+  font-size   : 1.5em;
+  font-weight : 100;
+  font-family : "Open Sans", sans-serif;
+}
+
+h5 {
+  text-align  : center;
+  margin      : 0;
+  padding     : 0;
+  font-size   : 0.9em;
+  font-weight : 100;
+  font-family : "Open Sans", sans-serif;
+  color       : #999;
+}
+
+.screenshot-explanation {
+  margin  : 40px 0;
+  padding : 30px 50px;
+  background : #555;
+  color   : #ddd;
+}
+
+.screenshot {
+  width  : 500px;
+  text-align : center;
+  display : inline-block;
+  vertical-align : middle;
+}
+
+.screenshot img {
+  width  : 500px;
+  box-shadow : 0px 0px 20px 5px #111;
+}
+
+.screenshot .img-hover {
+}
+
+.screenshot .caption {
+  font-size : 0.8em;
+  text-shadow : 0px 0px 20px #fff;
+}
+
+.explanation {
+  width : 600px;
+  display : inline-block;
+  vertical-align : middle;
+  padding-left : 50px;
+  text-shadow : 0px 0px 5px #000;
+}
