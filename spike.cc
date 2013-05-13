@@ -170,9 +170,17 @@ static float waveSurface(float x, float z, float t)
     return 2 + sin(t + x) + cos(t + z);
 }
 
-static float timeInvariantWaveSurface(float x, float z, float t) 
+static float tiWaveSurface(float x, float z, float t) 
 {
     return 2 + sin(x) + cos(z);
+}
+
+static float tiPitOfSinusoidalDoom(float x, float z, float t) {
+    return (pow(sin(x), 2) + sqrt(abs(z)));
+}
+
+static float tiStepSurface(float x, float z, float t) {
+    return (floor(x/3) + floor(z/3));
 }
 
 static void init()
@@ -180,7 +188,7 @@ static void init()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
-    scene.addThing(new Thing(timeInvariantWaveSurface, Point3f(0, 2, -8)));
+    scene.addThing(new Thing(tiPitOfSinusoidalDoom, Point3f(0, 10, 0)));
     for (Thing *thing : scene.things) {
         thing->touchSurfaceImmediately(scene.time);
     }
