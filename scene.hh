@@ -183,6 +183,8 @@ struct Thing {
                 deltas[i] = directionChanged ? 1 : deltas[i] + 1;
                 arms[i]->goal = arms[i]->getPincerEnd() + deltaSize;
                 clampToSurface(arms[i]->goal, surface, time);
+                float sinStep = (deltas[i] / moveData->numDeltas) * M_PI;
+                arms[i]->goal[1] += 2*sin(sinStep);
 
                 completedStep = false;
             } else {
