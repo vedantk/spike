@@ -20,9 +20,10 @@ static void display()
     glShadeModel(GL_SMOOTH);
 
     // need to find a better setting for scene.eye
-    GLfloat light_position[] = { expand_vec3(origEye), 0 };
+    Point3f pos = origEye + Point3f(1,0,1);
+    GLfloat light_position[] = { expand_vec3(pos), 0 };
     GLfloat light_ambient[] = { 0.1, 0.1, 0.1, 1.0 };
-    GLfloat light_diffuse[] = { 0.3, 0.3, 0.3, 1 };
+    GLfloat light_diffuse[] = { 0.5, 0.5, 0.5, 1 };
     GLfloat light_specular[] = { 1, 1, 1, 1 };
 
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);

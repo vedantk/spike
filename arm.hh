@@ -303,7 +303,7 @@ struct Arm {
     {
         /* Actually this is technically a square pyramid. Whoops. */
 
-        const float sideLength = 0.07;
+        const float sideLength = 0.17;
         const float sideHalved = sideLength / 2.0;
 
         // get one other point on the plane (plane defined by arrow.dot((x - center)) = 0)

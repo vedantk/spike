@@ -6,36 +6,30 @@
 
 #include "arm.hh"
 
-#define NR_ARMS     6
+#define NR_ARMS     3
 
 typedef float (*Surface)(float x, float z, float t);
 
 void setNormalMaterial() {
-   GLfloat mat_ambient[] = {0.4,0.2,0.2,1};
-   GLfloat mat_diffuse[] = {0.4,0.2,0.2,1};
+   GLfloat mat_ambient[] = {1,0.1,0.1,1};
+   GLfloat mat_diffuse[] = {1,0,0,1};
    GLfloat mat_specular[] = {1,0,0,1};
 
    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
    glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 10);
-
-   glEnable(GL_COLOR_MATERIAL);
-   glColor3f(1, 0, 0);
 }
 
 void setSurfaceMaterial() {
-   GLfloat mat_ambient[]  = {0.2,0.2,0.2,1};
-   GLfloat mat_diffuse[]  = {0.2,0.2,0.8,1};
-   GLfloat mat_specular[] = {0.2,0.2,0.8,1};
+   GLfloat mat_ambient[]  = {0,0,0,1};
+   GLfloat mat_diffuse[]  = {0,0,0.4,1};
+   GLfloat mat_specular[] = {0,0,0.4,1};
 
    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
    glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 10);
-
-   glEnable(GL_COLOR_MATERIAL);
-   glColor3f(0.5, 0.5, 0.5);
 }
 
 void renderSurface(Surface fn, float t, float x0, float xf, float z0, float zf)
